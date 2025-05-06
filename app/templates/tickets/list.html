@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>All Tickets</h2>
+  <a href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
+  <ul>
+  {% for t in tickets %}
+    <li>
+      <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
+        [{{ t.status }}] {{ t.title }}
+      </a>
+    </li>
+  {% else %}
+    <li>No tickets found.</li>
+  {% endfor %}
+  </ul>
+{% endblock %}

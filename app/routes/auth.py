@@ -27,14 +27,18 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('tickets.list_tickets'))
+
     form = LoginForm()
+    next_page = request.args.get('next')
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember.data)
-            return redirect(url_for('tickets.list_tickets'))
-        flash('Invalid email or password')
-    return render_template('login.html', form=form)
+            return redirect(next_page or url_for('tickets.list_tickets'))
+        flash('Invalid email or password', 'error')
+
+    return render_template('login.html', form=form, next=next_page)
 
 @auth_bp.route('/logout')
 @login_required

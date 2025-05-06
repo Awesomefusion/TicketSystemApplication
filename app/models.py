@@ -8,8 +8,23 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')
-    tickets_created = db.relationship('Ticket', backref='creator', lazy=True, foreign_keys='Ticket.created_by')
-    tickets_assigned = db.relationship('Ticket', backref='assignee', lazy=True, foreign_keys='Ticket.assigned_to')
+    department_id = db.Column(
+        db.Integer,
+        db.ForeignKey('department.id'),
+        nullable=True
+    )
+    tickets_created = db.relationship(
+        'Ticket',
+        backref='creator',
+        lazy=True,
+        foreign_keys='Ticket.created_by'
+    )
+    tickets_assigned = db.relationship(
+        'Ticket',
+        backref='assignee',
+        lazy=True,
+        foreign_keys='Ticket.assigned_to'
+    )
     comments = db.relationship('Comment', backref='author', lazy=True)
 
 class Ticket(db.Model):
