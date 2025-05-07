@@ -8,9 +8,9 @@
     {% endif %}
 
     <div>
-      {{ form.email.label }}<br>
-      {{ form.email(size=32) }}<br>
-      {% for err in form.email.errors %}
+      {{ form.identifier.label }}<br>
+      {{ form.identifier(size=32) }}<br>
+      {% for err in form.identifier.errors %}
         <span class="error">{{ err }}</span>
       {% endfor %}
     </div>

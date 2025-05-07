@@ -4,6 +4,7 @@ from .. import db, login_manager
 from ..models import User
 from flask_login import login_user, logout_user, login_required, current_user
 from ..forms import LoginForm, RegistrationForm
+from sqlalchemy import or_
 
 auth_bp = Blueprint('auth', __name__, template_folder='../templates')
 
@@ -30,13 +31,18 @@ def login():
 
     form = LoginForm()
     next_page = request.args.get('next')
-
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        ident = form.identifier.data
+        # look up by email OR username
+        user = User.query.filter(
+            or_(User.email == ident, User.username == ident)
+        ).first()
+
         if user and check_password_hash(user.password_hash, form.password.data):
             login_user(user, remember=form.remember.data)
             return redirect(next_page or url_for('tickets.list_tickets'))
-        flash('Invalid email or password', 'error')
+
+        flash('Invalid credentials', 'error')
 
     return render_template('login.html', form=form, next=next_page)
 
