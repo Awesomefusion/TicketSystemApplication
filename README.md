@@ -51,6 +51,8 @@ docker build -t ticket-system .
 
 docker run --env-file .env -p 5000:5000 ticket-system
 
+Docker Repo: https://hub.docker.com/r/realfusion/ticketsystemapplication
+
 ## Testing
 
 Create and activate virtual environment
