@@ -1,14 +1,17 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
 from .. import db
-from ..models import Ticket, User
-from ..forms import TicketForm
+from ..models import Ticket, User, Comment
+from ..forms import TicketForm, CommentForm
 
-tickets_bp = Blueprint('tickets', __name__, url_prefix='/tickets',
-                       template_folder='../templates/tickets')
+tickets_bp = Blueprint(
+    'tickets',
+    __name__,
+    url_prefix='/tickets',
+    template_folder='../templates/tickets'
+)
 
 def _load_assignees(form):
-    # Admin sees everyone, users only themselves
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
 
@@ -44,10 +47,14 @@ def create_ticket():
 @login_required
 def view_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    # Only admin or creator may view
     if current_user.role!='admin' and ticket.created_by!=current_user.id:
         abort(403)
-    return render_template('view.html', ticket=ticket)
+    comment_form = CommentForm()
+    return render_template(
+        'view.html',
+        ticket=ticket,
+        comment_form=comment_form
+    )
 
 @tickets_bp.route('/<int:ticket_id>/edit', methods=['GET','POST'])
 @login_required
@@ -64,7 +71,9 @@ def edit_ticket(ticket_id):
         ticket.assigned_to = form.assigned_to.data
         db.session.commit()
         flash('Ticket updated', 'success')
-        return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
+        return redirect(
+            url_for('tickets.view_ticket', ticket_id=ticket.id)
+        )
     return render_template('form.html', form=form, action="Edit")
 
 @tickets_bp.route('/<int:ticket_id>/delete', methods=['POST'])
@@ -77,3 +86,23 @@ def delete_ticket(ticket_id):
     db.session.commit()
     flash('Ticket deleted', 'warning')
     return redirect(url_for('tickets.list_tickets'))
+
+@tickets_bp.route('/<int:ticket_id>/comment', methods=['POST'])
+@login_required
+def comment_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    if current_user.role!='admin' and ticket.created_by!=current_user.id:
+        abort(403)
+    form = CommentForm()
+    if form.validate_on_submit():
+        new_comment = Comment(
+            ticket_id=ticket.id,
+            user_id=current_user.id,
+            comment=form.comment.data
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+        flash('Comment added', 'success')
+    else:
+        flash('Failed to post comment', 'error')
+    return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))

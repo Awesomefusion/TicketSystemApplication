@@ -1,21 +1,55 @@
 {% extends 'base.html' %}
+
 {% block content %}
   <h2>{{ ticket.title }}</h2>
   <p>{{ ticket.description }}</p>
   <p>Status: {{ ticket.status }}</p>
-  <p>Assigned to: {{ ticket.assignee.username or '–' }}</p>
-  <p>Created by: {{ ticket.creator.username }} on {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p>
+    Assigned to: {{ ticket.assignee.username or '–' }}<br>
+    Created by: {{ ticket.creator.username }} on
+    {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}
+  </p>
 
   {% if current_user.role=='admin' or ticket.created_by==current_user.id %}
     <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}">Edit</a>
     {% if current_user.role=='admin' %}
-      <form action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
-            method="post" style="display:inline">
-        {{ form.hidden_tag() }}
+      <form
+        action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
+        method="post" style="display:inline"
+      >
+        {{ comment_form.hidden_tag() }}
         <button type="submit">Delete</button>
       </form>
     {% endif %}
   {% endif %}
+
+  <hr>
+
+  <h3>Comments</h3>
+  <ul>
+    {% for c in ticket.comments %}
+      <li>
+        <strong>{{ c.author.username }}</strong>
+        <em>({{ c.timestamp.strftime('%Y-%m-%d %H:%M') }})</em><br>
+        {{ c.comment }}
+      </li>
+    {% else %}
+      <li>No comments yet.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Add a comment</h4>
+  <form
+    method="post"
+    action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}"
+  >
+    {{ comment_form.hidden_tag() }}
+    <p>
+      {{ comment_form.comment.label }}<br>
+      {{ comment_form.comment(rows=3, cols=50) }}
+    </p>
+    <p>{{ comment_form.submit() }}</p>
+  </form>
 
   <p><a href="{{ url_for('tickets.list_tickets') }}">&laquo; Back to list</a></p>
 {% endblock %}

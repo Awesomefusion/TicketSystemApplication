@@ -1,6 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, BooleanField, SubmitField
-from wtforms.fields.choices import SelectField
+from wtforms import StringField, PasswordField, TextAreaField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 
 class LoginForm(FlaskForm):
@@ -16,8 +15,10 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm Password',
-                                     validators=[DataRequired(), EqualTo('password')])
+    confirm_password = PasswordField(
+        'Confirm Password',
+        validators=[DataRequired(), EqualTo('password')]
+    )
     submit = SubmitField('Register')
 
 class TicketForm(FlaskForm):
@@ -30,3 +31,10 @@ class TicketForm(FlaskForm):
     )
     assigned_to = SelectField('Assign to', coerce=int)
     submit = SubmitField('Submit')
+
+class CommentForm(FlaskForm):
+    comment = TextAreaField(
+        'Comment',
+        validators=[DataRequired(), Length(min=1, max=500)]
+    )
+    submit = SubmitField('Post Comment')
