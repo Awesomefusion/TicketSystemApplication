@@ -32,27 +32,9 @@ jobs:
       - name: Run pytest
         run: python -m pytest --maxfail=1 --disable-warnings -q
 
-  build:
-    name: Build Docker Image
+  docker:
+    name: Build & Publish Docker Image
     needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Build & tag image
-        run: |
-          IMAGE=realfusion/ticketsystemapplication
-          docker build . \
-            --file Dockerfile \
-            --tag $IMAGE:${{ github.sha }}
-
-      - name: List Docker images
-        run: docker images
-
-  deploy:
-    name: Push to Docker Hub
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -64,12 +46,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push image tags
-        run: |
-          IMAGE=realfusion/ticketsystemapplication
-          docker push $IMAGE:${{ github.sha }}
-          docker tag $IMAGE:${{ github.sha }} $IMAGE:latest
-          docker push $IMAGE:latest
-
-      - name: Confirm pushed tags
-        run: echo "✅ Pushed tags for $IMAGE"
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            realfusion/ticketsystemapplication:latest
+            realfusion/ticketsystemapplication:${{ github.sha }}
