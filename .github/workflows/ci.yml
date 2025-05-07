@@ -2,19 +2,40 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   test:
-    # … your existing test job …
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: List repository contents
+        run: ls -R .
+
+      - name: Run pytest
+        run: python -m pytest --maxfail=1 --disable-warnings -q
 
   build:
     name: Build Docker Image
     needs: test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,7 +54,6 @@ jobs:
     name: Push to Docker Hub
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -47,12 +67,9 @@ jobs:
       - name: Push image tags
         run: |
           IMAGE=realfusion/ticketsystemapplication
-          # Push the SHA-tagged image
           docker push $IMAGE:${{ github.sha }}
-          # Tag as latest and push
           docker tag $IMAGE:${{ github.sha }} $IMAGE:latest
           docker push $IMAGE:latest
 
       - name: Confirm pushed tags
-        run: |
-          echo "Pushed tags for $IMAGE"
+        run: echo "✅ Pushed tags for $IMAGE"
