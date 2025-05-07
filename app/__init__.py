@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
@@ -24,6 +24,15 @@ def create_app():
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
+
+    # custom error pages
+    @app.errorhandler(403)
+    def forbidden(error):
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template('errors/404.html'), 404
 
     with app.app_context():
         db.create_all()
