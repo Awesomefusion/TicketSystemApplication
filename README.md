@@ -39,11 +39,15 @@ pip install -r requirements.txt
 
 ## Running the App
 
-python run.py
-
-python seed.py
+run `python run.py`
 
 Browse to http://127.0.0.1:5000/ to log in or register.
+
+## Testing
+
+Create and activate virtual environment
+
+run `pytest`
 
 ## Docker
 
@@ -53,10 +57,6 @@ docker run --env-file .env -p 5000:5000 ticket-system
 
 Docker Repo: https://hub.docker.com/r/realfusion/ticketsystemapplication
 
-## Testing
+## Docker Repository
 
-Create and activate virtual environment
-
-pytest
-
-
+https://hub.docker.com/r/realfusion/ticketsystemapplication/tags
