@@ -2,6 +2,7 @@ from . import db
 from flask_login import UserMixin
 from datetime import datetime
 
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -27,6 +28,7 @@ class User(UserMixin, db.Model):
     )
     comments = db.relationship('Comment', backref='author', lazy=True)
 
+
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
@@ -37,12 +39,14 @@ class Ticket(db.Model):
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     comments = db.relationship('Comment', backref='ticket', lazy=True)
 
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticket_id = db.Column(db.Integer, db.ForeignKey('ticket.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)

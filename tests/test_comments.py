@@ -3,12 +3,14 @@ from app import db
 from app.models import Ticket, Comment
 from werkzeug.security import generate_password_hash
 
+
 def login(client, identifier, password):
     return client.post(
         '/login',
         data={'identifier': identifier, 'password': password},
         follow_redirects=True
     )
+
 
 @pytest.fixture
 def ticket(app, admin_user):
@@ -24,6 +26,7 @@ def ticket(app, admin_user):
     db.session.commit()
     return ticket
 
+
 def test_admin_can_comment(client, admin_user, ticket):
     login(client, admin_user.username, 'adminpass')
     response = client.post(
@@ -34,6 +37,7 @@ def test_admin_can_comment(client, admin_user, ticket):
     assert response.status_code == 200
     assert b"Comment added" in response.data
     assert b"Admin comment" in response.data
+
 
 def test_ticket_creator_can_comment(client, normal_user, app):
     # Create a ticket by normal user and grab its ID within the session
@@ -58,6 +62,7 @@ def test_ticket_creator_can_comment(client, normal_user, app):
     assert response.status_code == 200
     assert b"Comment added" in response.data
     assert b"User comment" in response.data
+
 
 def test_normal_user_cannot_comment_others(client, normal_user, ticket):
     login(client, normal_user.username, 'userpass')

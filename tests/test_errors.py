@@ -2,6 +2,7 @@ import pytest
 from app import db
 from app.models import Ticket
 
+
 def login(client, identifier, password):
     return client.post(
         '/login',
@@ -9,11 +10,13 @@ def login(client, identifier, password):
         follow_redirects=True
     )
 
+
 def test_404_page(client):
     """Requesting a non-existent page returns 404 with the correct template."""
     response = client.get('/no-such-page')
     assert response.status_code == 404
     assert b"404 Not Found" in response.data
+
 
 def test_403_page(client, normal_user, admin_user, app):
     """
