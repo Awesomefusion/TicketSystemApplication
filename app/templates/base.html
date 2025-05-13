@@ -28,5 +28,20 @@
     {% endwith %}
     {% block content %}{% endblock %}
   </div>
+
+  <!-- Simple client-side form validation -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            const firstInvalid = form.querySelector(':invalid');
+            if (firstInvalid) firstInvalid.focus();
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

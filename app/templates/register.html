@@ -1,12 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
   <h2>Register</h2>
-  <form method="post">
+  <form method="post" novalidate>
     {{ form.hidden_tag() }}
-    <p>{{ form.username.label }}<br>{{ form.username(size=32) }}</p>
-    <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>
-    <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
-    <p>{{ form.confirm_password.label }}<br>{{ form.confirm_password(size=32) }}</p>
+
+    <p>
+      {{ form.username.label }}<br>
+      {{ form.username(size=32, required=True, minlength=3, maxlength=80) }}
+    </p>
+
+    <p>
+      {{ form.email.label }}<br>
+      {{ form.email(size=32, required=True) }}
+    </p>
+
+    <p>
+      {{ form.password.label }}<br>
+      {{ form.password(size=32, required=True, minlength=6) }}
+    </p>
+
+    <p>
+      {{ form.confirm_password.label }}<br>
+      {{ form.confirm_password(size=32, required=True) }}
+    </p>
+
     <p>{{ form.submit() }}</p>
   </form>
 {% endblock %}

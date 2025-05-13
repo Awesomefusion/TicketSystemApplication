@@ -1,12 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
   <h2>{{ action }} Ticket</h2>
-  <form method="post">
+  <form method="post" novalidate>
     {{ form.hidden_tag() }}
-    <p>{{ form.title.label }}<br>{{ form.title(size=50) }}</p>
-    <p>{{ form.description.label }}<br>{{ form.description(rows=4, cols=50) }}</p>
-    <p>{{ form.status.label }}<br>{{ form.status() }}</p>
-    <p>{{ form.assigned_to.label }}<br>{{ form.assigned_to() }}</p>
+
+    <p>
+      {{ form.title.label }}<br>
+      {{ form.title(size=50, required=True, maxlength=120) }}
+    </p>
+
+    <p>
+      {{ form.description.label }}<br>
+      {{ form.description(rows=4, cols=50, required=True) }}
+    </p>
+
+    <p>
+      {{ form.status.label }}<br>
+      {{ form.status(required=True) }}
+    </p>
+
+    <p>
+      {{ form.assigned_to.label }}<br>
+      {{ form.assigned_to(required=True) }}
+    </p>
+
     <p>{{ form.submit() }}</p>
   </form>
 {% endblock %}
