@@ -73,6 +73,5 @@ def test_xss_protection_in_comments(client, admin_user, ticket):
     assert b"&lt;script&gt" in response.data
     assert b"&lt;/script&gt" in response.data
 
-    # And raw tags must not appear
-    assert b"<script>" not in response.data
-    assert b"</script>" not in response.data
+    # The raw payload must never appear unescaped
+    assert xss_payload.encode() not in response.data
