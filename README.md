@@ -37,6 +37,18 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
+## Setup .env file
+
+Creating a .env file in the root which hides secrets not meant for git should look like this:
+
+SECRET_KEY={secret_key}
+
+ADMIN_USERNAME=admin
+
+ADMIN_EMAIL=admin@example.com
+
+ADMIN_PASSWORD={admin_password}
+
 ## Running the App
 
 run `python run.py`
