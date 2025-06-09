@@ -1,26 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Login</h2>
-  <form method="post" action="{{ url_for('auth.login', next=next) }}" novalidate>
+  <h2 class="title is-3">Login</h2>
+  <form method="post" action="{{ url_for('auth.login', next=next) }}">
     {{ form.hidden_tag() }}
     {% if next %}
       <input type="hidden" name="next" value="{{ next }}">
     {% endif %}
 
-    <div>
-      {{ form.identifier.label }}<br>
-      {{ form.identifier(size=32, required=True, minlength=3, maxlength=120) }}
+    <div class="field">
+      <label class="label">{{ form.identifier.label }}</label>
+      <div class="control">
+        {{ form.identifier(class_="input") }}
+      </div>
+      {% for err in form.identifier.errors %}
+        <p class="help is-danger">{{ err }}</p>
+      {% endfor %}
     </div>
 
-    <div>
-      {{ form.password.label }}<br>
-      {{ form.password(size=32, required=True) }}
+    <div class="field">
+      <label class="label">{{ form.password.label }}</label>
+      <div class="control">
+        {{ form.password(class_="input") }}
+      </div>
+      {% for err in form.password.errors %}
+        <p class="help is-danger">{{ err }}</p>
+      {% endfor %}
     </div>
 
-    <div>
-      {{ form.remember() }} {{ form.remember.label }}
+    <div class="field">
+      <label class="checkbox">
+        {{ form.remember() }} {{ form.remember.label }}
+      </label>
     </div>
 
-    <p>{{ form.submit() }}</p>
+    <div class="field">
+      <div class="control">
+        {{ form.submit(class_="button is-primary") }}
+      </div>
+    </div>
   </form>
 {% endblock %}

@@ -1,31 +1,57 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Register</h2>
-  <form method="post" novalidate>
-    {{ form.hidden_tag() }}
+<section class="section">
+  <div class="container">
+    <h1 class="title">Register</h1>
+    <form method="post">
+      {{ form.hidden_tag() }}
 
-    <p>
-      {{ form.username.label }}<br>
-      {{ form.username(size=32, required=True, minlength=3, maxlength=80) }}
-    </p>
+      <div class="field">
+        <label class="label">{{ form.username.label }}</label>
+        <div class="control">
+          {{ form.username(class="input") }}
+        </div>
+        {% for err in form.username.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
 
-    <p>
-      {{ form.email.label }}<br>
-      {{ form.email(size=32, required=True) }}
-    </p>
+      <div class="field">
+        <label class="label">{{ form.email.label }}</label>
+        <div class="control">
+          {{ form.email(class="input") }}
+        </div>
+        {% for err in form.email.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
 
-    <p>
-      {{ form.password.label }}<br>
-      {{ form.password(size=32, required=True, minlength=6) }}
-    </p>
+      <div class="field">
+        <label class="label">{{ form.password.label }}</label>
+        <div class="control">
+          {{ form.password(class="input") }}
+        </div>
+        {% for err in form.password.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
 
-    <p>
-      {{ form.confirm_password.label }}<br>
-      {{ form.confirm_password(size=32, required=True) }}
-    </p>
+      <div class="field">
+        <label class="label">{{ form.confirm_password.label }}</label>
+        <div class="control">
+          {{ form.confirm_password(class="input") }}
+        </div>
+        {% for err in form.confirm_password.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
 
-    <p>{{ form.department_id.label }}<br>{{ form.department_id() }}</p>
-
-    <p>{{ form.submit() }}</p>
-  </form>
+      <div class="field">
+        <div class="control">
+          {{ form.submit(class="button is-primary") }}
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}

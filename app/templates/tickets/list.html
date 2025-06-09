@@ -1,42 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>All Tickets</h2>
+<section class="section">
+  <div class="container">
+    <h1 class="title">Tickets</h1>
+    <a class="button is-primary mb-4" href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
 
-  <form method="get" class="filter-form" style="margin-bottom: 1em;">
-    <label>Status:
-      <select name="status">
-        <option value="">All</option>
-        <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
-        <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
-        <option value="Closed" {% if status_filter == 'Closed' %}selected{% endif %}>Closed</option>
-      </select>
-    </label>
+    <form method="get" class="mb-4">
+      <div class="field is-grouped">
+        <div class="control">
+          <div class="select">
+            <select name="status">
+              <option value="">All Statuses</option>
+              <option value="Open" {% if request.args.get('status') == 'Open' %}selected{% endif %}>Open</option>
+              <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>In Progress</option>
+              <option value="Closed" {% if request.args.get('status') == 'Closed' %}selected{% endif %}>Closed</option>
+            </select>
+          </div>
+        </div>
 
-    {% if current_user.role == 'admin' %}
-    <label>Assignee:
-      <select name="assignee">
-        <option value="">All</option>
-        {% for user in assignees %}
-          <option value="{{ user.id }}" {% if assignee_filter == user.id %}selected{% endif %}>{{ user.username }}</option>
+        <div class="control">
+          <div class="select">
+            <select name="assigned_to">
+              <option value="">All Assignees</option>
+              {% for user in users %}
+                <option value="{{ user.id }}" {% if request.args.get('assigned_to') == user.id|string %}selected{% endif %}>{{ user.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="control">
+          <button type="submit" class="button is-link">Filter</button>
+        </div>
+      </div>
+    </form>
+
+    {% if tickets %}
+      <ul>
+        {% for t in tickets %}
+          <li class="mb-2">
+            <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
+              <strong>[{{ t.status }}]</strong> {{ t.title }}
+            </a>
+          </li>
         {% endfor %}
-      </select>
-    </label>
+      </ul>
+    {% else %}
+      <p>No tickets found for this filter.</p>
     {% endif %}
-
-    <button type="submit">Filter</button>
-    <a href="{{ url_for('tickets.list_tickets') }}">Reset</a>
-  </form>
-
-  <a href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
-  <ul>
-  {% for t in tickets %}
-    <li>
-      <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
-        [{{ t.status }}] {{ t.title }}
-      </a>
-    </li>
-  {% else %}
-    <li>No tickets found.</li>
-  {% endfor %}
-  </ul>
+  </div>
+</section>
 {% endblock %}
