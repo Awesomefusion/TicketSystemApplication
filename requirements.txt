@@ -9,3 +9,4 @@ WTForms~=3.2.1
 python-dotenv~=1.1.0
 pytest~=8.3.5
 Faker~=24.0.0
+click~=8.1.8
