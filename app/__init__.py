@@ -1,16 +1,10 @@
 from flask import Flask, redirect, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from .models import User   # import here so user_loader can reference it
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
-
-# tells Flask-Login how to load a user from session
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
 
 
 def create_app():
@@ -21,11 +15,19 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    # register blueprints
+    # Import and register blueprints
     from .routes.auth import auth_bp
     from .routes.tickets import tickets_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(tickets_bp)
+
+    # Import models here to avoid circular import
+    from .models import User
+
+    # Register user loader
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # root redirect
     @app.route('/')
@@ -37,7 +39,7 @@ def create_app():
     def health():
         return 'OK', 200
 
-    # custom error pages
+    # error handlers
     @app.errorhandler(403)
     def forbidden(error):
         return render_template('errors/403.html'), 403
