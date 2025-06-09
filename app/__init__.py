@@ -1,10 +1,16 @@
 from flask import Flask, redirect, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from .models import User   # import here so user_loader can reference it
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
+
+# tells Flask-Login how to load a user from session
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 def create_app():
@@ -25,6 +31,11 @@ def create_app():
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
+
+    # health check endpoint
+    @app.route('/health')
+    def health():
+        return 'OK', 200
 
     # custom error pages
     @app.errorhandler(403)
