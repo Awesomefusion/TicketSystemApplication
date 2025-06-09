@@ -49,9 +49,13 @@ ADMIN_EMAIL=admin@example.com
 
 ADMIN_PASSWORD={admin_password}
 
+## Seed the Database
+
+Run `flask seed`
+
 ## Running the App
 
-run `python run.py`
+Run `python run.py`
 
 Browse to http://127.0.0.1:5000/ to log in or register.
 
