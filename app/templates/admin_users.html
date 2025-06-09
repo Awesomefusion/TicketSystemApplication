@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>User Management</h2>
+  {% for user in users %}
+    <div class="user-form">
+      <h4>{{ user.username }} ({{ user.email }})</h4>
+      <form method="post">
+        {{ forms[user.id].hidden_tag() }}
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        {{ forms[user.id].role.label }} {{ forms[user.id].role() }}
+        {{ forms[user.id].department_id.label }} {{ forms[user.id].department_id() }}
+        {{ forms[user.id].submit() }}
+      </form>
+    </div>
+    <hr>
+  {% endfor %}
+{% endblock %}

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
 from .. import db
-from ..models import Ticket, User, Comment
-from ..forms import TicketForm, CommentForm
+from ..models import Ticket, User, Comment, Department
+from ..forms import TicketForm, CommentForm, UserAdminForm
 
 tickets_bp = Blueprint(
     'tickets',
@@ -123,3 +123,34 @@ def comment_ticket(ticket_id):
     else:
         flash('Failed to post comment', 'error')
     return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
+
+@tickets_bp.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def manage_users():
+    if current_user.role != 'admin':
+        abort(403)
+
+    users = User.query.all()
+    departments = Department.query.all()
+    department_choices = [(d.id, d.name) for d in departments]
+
+    forms = {}
+    for user in users:
+        form = UserAdminForm(obj=user)
+        form.role.data = user.role
+        form.department_id.choices = department_choices
+        form.department_id.data = user.department_id
+        forms[user.id] = form
+
+    if request.method == 'POST':
+        user_id = int(request.form['user_id'])
+        form = forms[user_id]
+        if form.validate_on_submit():
+            user = User.query.get(user_id)
+            user.role = form.role.data
+            user.department_id = form.department_id.data
+            db.session.commit()
+            flash(f"Updated {user.username}", "success")
+            return redirect(url_for('tickets.manage_users'))
+
+    return render_template('admin_users.html', users=users, forms=forms)

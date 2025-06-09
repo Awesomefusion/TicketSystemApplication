@@ -41,3 +41,8 @@ class CommentForm(FlaskForm):
         validators=[DataRequired(), Length(min=1, max=500)]
     )
     submit = SubmitField('Post Comment')
+
+class UserAdminForm(FlaskForm):
+    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')])
+    department_id = SelectField('Department', coerce=int)
+    submit = SubmitField('Update')

@@ -9,6 +9,9 @@
   <nav>
     {% if current_user.is_authenticated %}
       Logged in as {{ current_user.username }} |
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('tickets.manage_users') }}">Admin Panel</a> |
+    {% endif %}
       <a href="{{ url_for('tickets.list_tickets') }}">Tickets</a> |
       <a href="{{ url_for('tickets.dashboard') }}">Dashboard</a> |
       <a href="{{ url_for('auth.logout') }}">Logout</a>
