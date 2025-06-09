@@ -124,3 +124,23 @@ def test_delete_ticket_non_admin_forbidden(client, normal_user, admin_ticket):
         follow_redirects=False
     )
     assert resp.status_code == 403
+
+def test_edit_ticket_non_owner_forbidden(client, normal_user, admin_ticket):
+    # Log in as normal_user
+    client.post('/login', data={
+        'identifier': normal_user.username,
+        'password': 'userpass'
+    })
+
+    # Attempt to edit admin's ticket
+    resp = client.post(
+        f'/tickets/{admin_ticket.id}/edit',
+        data={
+            'title': 'Hacked',
+            'description': 'Not yours',
+            'status': 'Open',
+            'assigned_to': str(normal_user.id)
+        },
+        follow_redirects=False
+    )
+    assert resp.status_code == 403

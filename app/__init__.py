@@ -6,7 +6,6 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
@@ -25,6 +24,11 @@ def create_app():
     @app.route('/')
     def home():
         return redirect(url_for('auth.login'))
+
+    # health check endpoint
+    @app.route('/health')
+    def health():
+        return 'OK', 200
 
     # custom error pages
     @app.errorhandler(403)
