@@ -11,7 +11,7 @@ auth_bp = Blueprint('auth', __name__, template_folder='../templates')
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('tickets.list_tickets'))
+        return redirect(url_for('tickets.dashboard'))
 
     form = LoginForm()
     next_page = request.args.get('next')

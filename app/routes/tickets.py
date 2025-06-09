@@ -15,6 +15,23 @@ def _load_assignees(form):
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
 
+@tickets_bp.route('/dashboard')
+@login_required
+def dashboard():
+    if current_user.role == 'admin':
+        total_tickets = Ticket.query.count()
+        open_tickets = Ticket.query.filter_by(status='Open').count()
+        in_progress = Ticket.query.filter_by(status='In Progress').count()
+        closed = Ticket.query.filter_by(status='Closed').count()
+    else:
+        total_tickets = Ticket.query.filter_by(created_by=current_user.id).count()
+        open_tickets = Ticket.query.filter_by(created_by=current_user.id, status='Open').count()
+        in_progress = Ticket.query.filter_by(created_by=current_user.id, status='In Progress').count()
+        closed = Ticket.query.filter_by(created_by=current_user.id, status='Closed').count()
+
+    return render_template('dashboard.html', total=total_tickets, open=open_tickets,
+                           in_progress=in_progress, closed=closed)
+
 @tickets_bp.route('/')
 @login_required
 def list_tickets():
