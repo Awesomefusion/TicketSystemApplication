@@ -35,11 +35,29 @@ def dashboard():
 @tickets_bp.route('/')
 @login_required
 def list_tickets():
-    if current_user.role == 'admin':
-        tickets = Ticket.query.all()
-    else:
-        tickets = Ticket.query.filter_by(created_by=current_user.id).all()
-    return render_template('list.html', tickets=tickets)
+    status_filter = request.args.get('status')
+    assignee_filter = request.args.get('assignee', type=int)
+
+    query = Ticket.query
+
+    if current_user.role != 'admin':
+        query = query.filter_by(created_by=current_user.id)
+
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    if assignee_filter:
+        query = query.filter_by(assigned_to=assignee_filter)
+
+    tickets = query.all()
+    assignees = User.query.all() if current_user.role == 'admin' else []
+
+    return render_template(
+        'list.html',
+        tickets=tickets,
+        assignees=assignees,
+        status_filter=status_filter,
+        assignee_filter=assignee_filter
+    )
 
 @tickets_bp.route('/create', methods=['GET','POST'])
 @login_required

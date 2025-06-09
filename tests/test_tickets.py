@@ -144,3 +144,24 @@ def test_edit_ticket_non_owner_forbidden(client, normal_user, admin_ticket):
         follow_redirects=False
     )
     assert resp.status_code == 403
+
+def test_filter_tickets_by_status(client, admin_user, user_ticket, admin_ticket):
+    # Update one ticket to 'Closed'
+    user_ticket.status = "Closed"
+    db.session.commit()
+
+    login(client, admin_user.username, 'adminpass')
+    resp = client.get('/tickets/?status=Closed')
+    assert resp.status_code == 200
+    data = resp.data
+    assert b"User Ticket" in data
+    assert b"Admin Ticket" not in data
+
+
+def test_filter_tickets_by_assignee(client, admin_user, user_ticket, admin_ticket):
+    login(client, admin_user.username, 'adminpass')
+    resp = client.get(f'/tickets/?assignee={admin_user.id}')
+    assert resp.status_code == 200
+    data = resp.data
+    assert b"Admin Ticket" in data
+    assert b"User Ticket" not in data

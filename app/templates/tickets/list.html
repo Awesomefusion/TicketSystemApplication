@@ -1,6 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
   <h2>All Tickets</h2>
+
+  <form method="get" class="filter-form" style="margin-bottom: 1em;">
+    <label>Status:
+      <select name="status">
+        <option value="">All</option>
+        <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
+        <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+        <option value="Closed" {% if status_filter == 'Closed' %}selected{% endif %}>Closed</option>
+      </select>
+    </label>
+
+    {% if current_user.role == 'admin' %}
+    <label>Assignee:
+      <select name="assignee">
+        <option value="">All</option>
+        {% for user in assignees %}
+          <option value="{{ user.id }}" {% if assignee_filter == user.id %}selected{% endif %}>{{ user.username }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
+
+    <button type="submit">Filter</button>
+    <a href="{{ url_for('tickets.list_tickets') }}">Reset</a>
+  </form>
+
   <a href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
   <ul>
   {% for t in tickets %}
