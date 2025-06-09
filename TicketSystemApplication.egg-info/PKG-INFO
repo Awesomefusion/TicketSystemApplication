@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: TicketSystemApplication
+Version: 0.1
+License-File: LICENSE
+Requires-Dist: Flask~=3.1.0
+Requires-Dist: Flask-SQLAlchemy
+Requires-Dist: Flask-Login~=0.6.3
+Requires-Dist: Flask-WTF
+Requires-Dist: email_validator
+Requires-Dist: Werkzeug~=3.1.3
+Requires-Dist: SQLAlchemy~=2.0.40
+Requires-Dist: WTForms~=3.2.1
+Requires-Dist: python-dotenv
+Dynamic: license-file
+Dynamic: requires-dist
