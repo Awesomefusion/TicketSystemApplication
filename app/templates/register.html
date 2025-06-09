@@ -24,6 +24,8 @@
       {{ form.confirm_password(size=32, required=True) }}
     </p>
 
+    <p>{{ form.department_id.label }}<br>{{ form.department_id() }}</p>
+
     <p>{{ form.submit() }}</p>
   </form>
 {% endblock %}

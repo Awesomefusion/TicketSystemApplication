@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import or_
 from flask_login import login_user, logout_user, login_required, current_user
 from .. import db
-from ..models import User
+from ..models import User, Department
 from ..forms import LoginForm, RegistrationForm
 
 auth_bp = Blueprint('auth', __name__, template_folder='../templates')
@@ -28,22 +28,22 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('tickets.list_tickets'))
-
     form = RegistrationForm()
+    form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
+
     if form.validate_on_submit():
         hashed_pw = generate_password_hash(form.password.data)
         user = User(
             username=form.username.data,
             email=form.email.data,
-            password_hash=hashed_pw
+            password_hash=hashed_pw,
+            department_id=form.department_id.data
         )
         db.session.add(user)
         db.session.commit()
-        flash('Registration successful, please log in', 'success')
+        flash('Registration successful! You may now log in.', 'success')
         return redirect(url_for('auth.login'))
-    return render_template('register.html', form=form)
+    return render_template('auth/register.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required
