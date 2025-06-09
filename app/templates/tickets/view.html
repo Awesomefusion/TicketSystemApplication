@@ -32,7 +32,7 @@
     {% endfor %}
 
     {% if current_user.id == ticket.created_by or current_user.role == 'admin' %}
-    <form method="post" action="{{ url_for('tickets.add_comment', ticket_id=ticket.id) }}">
+    <form method="post" action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}">
       <div class="field">
         <label class="label">Add Comment</label>
         <div class="control">
