@@ -1,53 +1,52 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="title">Tickets</h1>
-    <a class="button is-primary mb-4" href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
+  <h2 class="title is-4">All Tickets</h2>
 
-    <form method="get" class="mb-4">
-      <div class="field is-grouped">
-        <div class="control">
-          <div class="select">
-            <select name="status">
-              <option value="">All Statuses</option>
-              <option value="Open" {% if request.args.get('status') == 'Open' %}selected{% endif %}>Open</option>
-              <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>In Progress</option>
-              <option value="Closed" {% if request.args.get('status') == 'Closed' %}selected{% endif %}>Closed</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="control">
-          <div class="select">
-            <select name="assigned_to">
-              <option value="">All Assignees</option>
-              {% for user in users %}
-                <option value="{{ user.id }}" {% if request.args.get('assigned_to') == user.id|string %}selected{% endif %}>{{ user.username }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-
-        <div class="control">
-          <button type="submit" class="button is-link">Filter</button>
-        </div>
-      </div>
-    </form>
-
-    {% if tickets %}
-      <ul>
-        {% for t in tickets %}
-          <li class="mb-2">
-            <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
-              <strong>[{{ t.status }}]</strong> {{ t.title }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
+  <ul>
+    {% for t in tickets %}
+      <li>
+        <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
+          [{{ t.status }}] {{ t.title }}
+        </a>
+      </li>
     {% else %}
-      <p>No tickets found for this filter.</p>
-    {% endif %}
-  </div>
-</section>
+      <li>No tickets found.</li>
+    {% endfor %}
+  </ul>
+
+  {# --- pagination controls, NO more <li> tags here --- #}
+  {% if pagination.pages > 1 %}
+    <nav class="pagination" role="navigation" aria-label="pagination">
+      {% if pagination.has_prev %}
+        <a class="pagination-previous"
+           href="{{ url_for('tickets.list_tickets', page=pagination.prev_num,
+                            status=status_filter, assignee=assignee_filter) }}">
+          Previous
+        </a>
+      {% else %}
+        <a class="pagination-previous" disabled>Previous</a>
+      {% endif %}
+
+      {% if pagination.has_next %}
+        <a class="pagination-next"
+           href="{{ url_for('tickets.list_tickets', page=pagination.next_num,
+                            status=status_filter, assignee=assignee_filter) }}">
+          Next
+        </a>
+      {% else %}
+        <a class="pagination-next" disabled>Next</a>
+      {% endif %}
+
+      <div class="pagination-list">
+        {% for p in range(1, pagination.pages + 1) %}
+          <a class="pagination-link{% if p == pagination.page %} is-current{% endif %}"
+             href="{{ url_for('tickets.list_tickets', page=p,
+                              status=status_filter, assignee=assignee_filter) }}">
+            {{ p }}
+          </a>
+        {% endfor %}
+      </div>
+    </nav>
+  <a class="button is-primary" href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
+  {% endif %}
 {% endblock %}

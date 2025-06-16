@@ -37,27 +37,37 @@ def dashboard():
 def list_tickets():
     status_filter = request.args.get('status')
     assignee_filter = request.args.get('assignee', type=int)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
 
+    # build base query
     query = Ticket.query
-
     if current_user.role != 'admin':
         query = query.filter_by(created_by=current_user.id)
-
     if status_filter:
         query = query.filter_by(status=status_filter)
     if assignee_filter:
         query = query.filter_by(assigned_to=assignee_filter)
 
-    tickets = query.all()
+    # paginate, newest first, don't error_out on bad page numbers
+    pagination = query.order_by(Ticket.created_at.desc())\
+                      .paginate(page=page, per_page=per_page, error_out=False)
+
+    # only the records for this page
+    tickets = pagination.items
+
+    # for the filter dropdowns
     assignees = User.query.all() if current_user.role == 'admin' else []
 
     return render_template(
         'list.html',
-        tickets=tickets,
+        tickets=tickets,            # <-- a simple list of up to `per_page` items
+        pagination=pagination,      # <-- the Pagination object, for nav
         assignees=assignees,
         status_filter=status_filter,
         assignee_filter=assignee_filter
     )
+
 
 @tickets_bp.route('/create', methods=['GET','POST'])
 @login_required
