@@ -31,7 +31,7 @@ jobs:
       - name: Run pytest
         run: python -m pytest --maxfail=1 --disable-warnings -q
 
-  docker-develop:
+  docker-development:
     name: Build & Publish Dev Docker Image
     needs: test
     if: github.ref == 'refs/heads/develop'
