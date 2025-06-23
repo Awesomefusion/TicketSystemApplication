@@ -3,11 +3,11 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - development
+      - develop
       - main
   pull_request:
     branches:
-      - development
+      - develop
       - main
 
 jobs:
@@ -31,13 +31,11 @@ jobs:
       - name: Run pytest
         run: python -m pytest --maxfail=1 --disable-warnings -q
 
-  docker_dev:
-    name: Build & Push Docker Image (dev)
+  docker-develop:
+    name: Build & Publish Dev Docker Image
     needs: test
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    environment:
-      name: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -48,23 +46,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (dev)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            realfusion/ticketsystemapplication:${{ github.sha }}
             realfusion/ticketsystemapplication:dev
+            realfusion/ticketsystemapplication:${{ github.sha }}
 
-  docker_prod:
-    name: Build & Push Docker Image (prod)
+  docker-production:
+    name: Build & Publish Prod Docker Image
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment:
-      name: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -75,12 +71,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (latest)
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            realfusion/ticketsystemapplication:${{ github.sha }}
             realfusion/ticketsystemapplication:latest
+            realfusion/ticketsystemapplication:${{ github.sha }}
