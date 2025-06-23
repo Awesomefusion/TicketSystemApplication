@@ -3,11 +3,9 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - develop
       - main
   pull_request:
     branches:
-      - develop
       - main
 
 jobs:
@@ -30,32 +28,6 @@ jobs:
 
       - name: Run pytest
         run: python -m pytest --maxfail=1 --disable-warnings -q
-
-  docker-development:
-    name: Build & Publish Dev Docker Image
-    needs: test
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: development
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image (dev)
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: |
-            realfusion/ticketsystemapplication:dev
-            realfusion/ticketsystemapplication:${{ github.sha }}
 
   docker-production:
     name: Build & Publish Prod Docker Image
