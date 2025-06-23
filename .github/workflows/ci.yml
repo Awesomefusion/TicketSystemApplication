@@ -34,7 +34,7 @@ jobs:
   docker-development:
     name: Build & Publish Dev Docker Image
     needs: test
-    if: github.ref == 'refs/heads/development'
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: development
     steps:
