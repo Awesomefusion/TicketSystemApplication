@@ -1,2 +1,2 @@
-web: gunicorn run:app
 release: flask seed
+web: gunicorn run:app

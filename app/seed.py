@@ -30,9 +30,9 @@ def seed_departments():
 
 def seed_users():
     # Admin from env (fallbacks)
-    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'ChangeMe123!')
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL',)
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
     # Create admin if missing
     if not User.query.filter_by(username=ADMIN_USERNAME).first():
