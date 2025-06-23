@@ -11,7 +11,6 @@ ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
-from app import create_app, db
 app = create_app()
 
 if __name__ == '__main__':

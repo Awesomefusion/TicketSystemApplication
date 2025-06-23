@@ -50,8 +50,8 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    # Register CLI seed command
-    from .seed import register_commands
-    register_commands(app)
+    # Register your CLI "seed" command
+    from . import seed
+    seed.register_commands(app)
 
     return app
