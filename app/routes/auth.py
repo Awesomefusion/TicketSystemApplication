@@ -24,11 +24,14 @@ def login():
             login_user(user, remember=form.remember.data)
             return redirect(next_page or url_for('tickets.list_tickets'))
         flash('Invalid credentials', 'error')
+
     return render_template('login.html', form=form, next=next_page)
+
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
+    # let folks pick a department at signup
     form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
 
     if form.validate_on_submit():
@@ -43,7 +46,10 @@ def register():
         db.session.commit()
         flash('Registration successful! You may now log in.', 'success')
         return redirect(url_for('auth.login'))
-    return render_template('auth/register.html', form=form)
+
+    # no 'auth/' prefix here
+    return render_template('register.html', form=form)
+
 
 @auth_bp.route('/logout')
 @login_required
