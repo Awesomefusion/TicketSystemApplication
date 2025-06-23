@@ -1,42 +1,100 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2 class="title is-3">Login</h2>
-  <form method="post" action="{{ url_for('auth.login', next=next) }}">
-    {{ form.hidden_tag() }}
-    {% if next %}
-      <input type="hidden" name="next" value="{{ next }}">
-    {% endif %}
+<section class="section">
+  <div class="container">
+    <h2 class="title">Login</h2>
 
-    <div class="field">
-      <label class="label">{{ form.identifier.label }}</label>
-      <div class="control">
-        {{ form.identifier(class_="input") }}
+    <form method="post" novalidate id="loginForm">
+      {{ form.hidden_tag() }}
+
+      <!-- Identifier (username or email) -->
+      <div class="field">
+        <label class="label" for="identifier">Username or Email</label>
+        <div class="control">
+          {{ form.identifier(
+               class="input",
+               id="identifier",
+               placeholder="Enter username or email",
+               required=True
+          ) }}
+        </div>
+        <p class="help is-danger" id="idHelp" style="display:none;">
+          Required.
+        </p>
+        {% for err in form.identifier.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
       </div>
-      {% for err in form.identifier.errors %}
-        <p class="help is-danger">{{ err }}</p>
-      {% endfor %}
-    </div>
 
-    <div class="field">
-      <label class="label">{{ form.password.label }}</label>
-      <div class="control">
-        {{ form.password(class_="input") }}
+      <!-- Password -->
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <div class="control">
+          {{ form.password(
+               class="input",
+               id="password",
+               type="password",
+               placeholder="Enter password",
+               required=True
+          ) }}
+        </div>
+        <p class="help is-danger" id="pwHelp" style="display:none;">
+          Required.
+        </p>
+        {% for err in form.password.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
       </div>
-      {% for err in form.password.errors %}
-        <p class="help is-danger">{{ err }}</p>
-      {% endfor %}
-    </div>
 
-    <div class="field">
-      <label class="checkbox">
-        {{ form.remember() }} {{ form.remember.label }}
-      </label>
-    </div>
-
-    <div class="field">
-      <div class="control">
-        {{ form.submit(class_="button is-primary") }}
+      <!-- Remember me -->
+      <div class="field">
+        <div class="control">
+          <label class="checkbox">
+            {{ form.remember() }} Remember me
+          </label>
+        </div>
       </div>
-    </div>
-  </form>
+
+      <div class="field">
+        <div class="control">
+          <button type="submit" class="button is-link">Login</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  const ident = document.getElementById('identifier');
+  const pw    = document.getElementById('password');
+  const idHelp = document.getElementById('idHelp');
+  const pwHelp = document.getElementById('pwHelp');
+
+  function validateId() {
+    const ok = ident.value.trim().length > 0;
+    ident.classList.toggle('is-success', ok);
+    ident.classList.toggle('is-danger', !ok);
+    idHelp.style.display = ok ? 'none' : 'block';
+    return ok;
+  }
+  function validatePw() {
+    const ok = pw.value.trim().length > 0;
+    pw.classList.toggle('is-success', ok);
+    pw.classList.toggle('is-danger', !ok);
+    pwHelp.style.display = ok ? 'none' : 'block';
+    return ok;
+  }
+
+  ident.addEventListener('input', validateId);
+  pw.addEventListener('input', validatePw);
+
+  form.addEventListener('submit', e => {
+    if (!(validateId() && validatePw())) {
+      e.preventDefault();
+    }
+  });
+});
+</script>
 {% endblock %}
