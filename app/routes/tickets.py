@@ -12,6 +12,7 @@ tickets_bp = Blueprint(
 )
 
 def _load_assignees(form):
+    # only admins see all assignees, others just themselves
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
 
@@ -29,45 +30,46 @@ def dashboard():
         in_progress = Ticket.query.filter_by(created_by=current_user.id, status='In Progress').count()
         closed = Ticket.query.filter_by(created_by=current_user.id, status='Closed').count()
 
-    return render_template('dashboard.html', total=total_tickets, open=open_tickets,
-                           in_progress=in_progress, closed=closed)
+    return render_template(
+        'dashboard.html',
+        total=total_tickets,
+        open=open_tickets,
+        in_progress=in_progress,
+        closed=closed
+    )
 
 @tickets_bp.route('/')
 @login_required
 def list_tickets():
-    status_filter = request.args.get('status')
+    status_filter   = request.args.get('status')
     assignee_filter = request.args.get('assignee', type=int)
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
+    page            = request.args.get('page', 1, type=int)
+    per_page        = 10
 
-    # build base query
+    # everyone sees all tickets
     query = Ticket.query
-    if current_user.role != 'admin':
-        query = query.filter_by(created_by=current_user.id)
+
+    # apply filters
     if status_filter:
         query = query.filter_by(status=status_filter)
     if assignee_filter:
         query = query.filter_by(assigned_to=assignee_filter)
 
     # paginate, newest first, don't error_out on bad page numbers
-    pagination = query.order_by(Ticket.created_at.desc())\
+    pagination = query.order_by(Ticket.created_at.desc()) \
                       .paginate(page=page, per_page=per_page, error_out=False)
 
-    # only the records for this page
-    tickets = pagination.items
-
-    # for the filter dropdowns
+    tickets   = pagination.items
     assignees = User.query.all() if current_user.role == 'admin' else []
 
     return render_template(
         'list.html',
-        tickets=tickets,            # <-- a simple list of up to `per_page` items
-        pagination=pagination,      # <-- the Pagination object, for nav
+        tickets=tickets,          # up to per_page tickets for this page
+        pagination=pagination,    # for your pagination controls
         assignees=assignees,
         status_filter=status_filter,
         assignee_filter=assignee_filter
     )
-
 
 @tickets_bp.route('/create', methods=['GET','POST'])
 @login_required
@@ -92,8 +94,7 @@ def create_ticket():
 @login_required
 def view_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role!='admin' and ticket.created_by!=current_user.id:
-        abort(403)
+    # anyone can view any ticket now
     comment_form = CommentForm()
     return render_template(
         'view.html',
@@ -105,8 +106,16 @@ def view_ticket(ticket_id):
 @login_required
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role!='admin' and ticket.created_by!=current_user.id:
+
+    # edit permission: admin, IT Support, or owner
+    user_dept = current_user.department.name if current_user.department else None
+    if not (
+        current_user.role == 'admin'
+        or user_dept == 'IT Support'
+        or ticket.created_by == current_user.id
+    ):
         abort(403)
+
     form = TicketForm(obj=ticket)
     _load_assignees(form)
     if form.validate_on_submit():
@@ -116,16 +125,14 @@ def edit_ticket(ticket_id):
         ticket.assigned_to = form.assigned_to.data
         db.session.commit()
         flash('Ticket updated', 'success')
-        return redirect(
-            url_for('tickets.view_ticket', ticket_id=ticket.id)
-        )
+        return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
     return render_template('form.html', form=form, action="Edit")
 
 @tickets_bp.route('/<int:ticket_id>/delete', methods=['POST'])
 @login_required
 def delete_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role!='admin':
+    if current_user.role != 'admin':
         abort(403)
     db.session.delete(ticket)
     db.session.commit()
@@ -136,8 +143,17 @@ def delete_ticket(ticket_id):
 @login_required
 def comment_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role!='admin' and ticket.created_by!=current_user.id:
+
+    # comment permission: admin, IT Support, or same-department-as-creator
+    user_dept      = current_user.department.name if current_user.department else None
+    creator_dept_id = ticket.creator.department_id
+    if not (
+        current_user.role == 'admin'
+        or user_dept == 'IT Support'
+        or current_user.department_id == creator_dept_id
+    ):
         abort(403)
+
     form = CommentForm()
     if form.validate_on_submit():
         new_comment = Comment(
@@ -158,7 +174,7 @@ def manage_users():
     if current_user.role != 'admin':
         abort(403)
 
-    users = User.query.all()
+    users       = User.query.all()
     departments = Department.query.all()
     department_choices = [(d.id, d.name) for d in departments]
 
@@ -172,10 +188,10 @@ def manage_users():
 
     if request.method == 'POST':
         user_id = int(request.form['user_id'])
-        form = forms[user_id]
+        form    = forms[user_id]
         if form.validate_on_submit():
             user = User.query.get(user_id)
-            user.role = form.role.data
+            user.role          = form.role.data
             user.department_id = form.department_id.data
             db.session.commit()
             flash(f"Updated {user.username}", "success")

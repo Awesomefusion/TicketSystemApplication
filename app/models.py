@@ -27,6 +27,7 @@ class User(UserMixin, db.Model):
         foreign_keys='Ticket.assigned_to'
     )
     comments = db.relationship('Comment', backref='author', lazy=True)
+    department = db.relationship('Department', backref='users')
 
 
 class Ticket(db.Model):
