@@ -5,21 +5,110 @@
     <h2 class="title">Register</h2>
     <form method="post" novalidate id="registerForm">
       {{ form.hidden_tag() }}
-      {# username, email, password, confirm_password as before #}
 
+      <!-- Username -->
+      <div class="field">
+        <label class="label" for="username">{{ form.username.label.text }}</label>
+        <div class="control">
+          {{ form.username(
+               class="input",
+               id="username",
+               placeholder="Choose a username",
+               required=True,
+               minlength=4,
+               maxlength=16
+          ) }}
+        </div>
+        <p class="help is-danger" id="usernameHelp">
+          Username must be 4–16 characters.
+        </p>
+        {% for err in form.username.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label class="label" for="email">{{ form.email.label.text }}</label>
+        <div class="control">
+          {{ form.email(
+               class="input",
+               id="email",
+               type="email",
+               placeholder="you@example.com",
+               required=True
+          ) }}
+        </div>
+        <p class="help is-danger" id="emailHelp">
+          Please enter a valid email address.
+        </p>
+        {% for err in form.email.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label class="label" for="password">{{ form.password.label.text }}</label>
+        <div class="control">
+          {{ form.password(
+               class="input",
+               id="password",
+               type="password",
+               placeholder="Password",
+               required=True,
+               minlength=8,
+               maxlength=16
+          ) }}
+        </div>
+        <div class="help is-danger" id="passwordHelp">
+          <ul>
+            <li id="pwLen">8–16 characters</li>
+            <li id="pwUpper">At least one uppercase letter</li>
+            <li id="pwLower">At least one lowercase letter</li>
+            <li id="pwNumber">At least one number</li>
+            <li id="pwSpecial">At least one special character (!@#$%^&*…)</li>
+          </ul>
+        </div>
+        {% for err in form.password.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="field">
+        <label class="label" for="confirm_password">{{ form.confirm_password.label.text }}</label>
+        <div class="control">
+          {{ form.confirm_password(
+               class="input",
+               id="confirm_password",
+               type="password",
+               placeholder="Confirm password",
+               required=True,
+               minlength=8,
+               maxlength=16
+          ) }}
+        </div>
+        <p class="help is-danger" id="pwMismatch" style="display:none;">
+          Passwords do not match.
+        </p>
+        {% for err in form.confirm_password.errors %}
+          <p class="help is-danger">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Department -->
       <div class="field">
         <label class="label" for="department_id">{{ form.department_id.label.text }}</label>
         <div class="control">
-          {{ form.department_id(
-                class="input",
-                id="department_id"
-             ) }}
+          {{ form.department_id(class="input", id="department_id") }}
         </div>
         {% for err in form.department_id.errors %}
           <p class="help is-danger">{{ err }}</p>
         {% endfor %}
       </div>
 
+      <!-- Submit -->
       <div class="field">
         <div class="control">
           {{ form.submit(class="button is-primary") }}
@@ -30,21 +119,96 @@
 </section>
 
 <script>
-// your existing client-side checks
-// plus real-time feedback…
-['username','email','password','confirm_password','department_id']
-  .forEach(id => {
-    const input = document.getElementById(id);
-    if (!input) return;
-    input.addEventListener('input', () => {
-      if (input.checkValidity()) {
-        input.classList.remove('is-danger');
-        input.classList.add('is-success');
-      } else {
-        input.classList.remove('is-success');
-        input.classList.add('is-danger');
-      }
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  const form    = document.getElementById('registerForm');
+  const username= document.getElementById('username');
+  const email   = document.getElementById('email');
+  const pw      = document.getElementById('password');
+  const cpw     = document.getElementById('confirm_password');
+
+  const usernameHelp = document.getElementById('usernameHelp');
+  const emailHelp    = document.getElementById('emailHelp');
+  const passwordHelp = document.getElementById('passwordHelp');
+  const pwMismatch   = document.getElementById('pwMismatch');
+
+  const pwChecks = {
+    pwLen:     v => v.length >=8 && v.length <=16,
+    pwUpper:   v => /[A-Z]/.test(v),
+    pwLower:   v => /[a-z]/.test(v),
+    pwNumber:  v => /\d/.test(v),
+    pwSpecial: v => /[!@#\$%\^&\*\(\),\.\?":\{\}\|<>]/.test(v)
+  };
+
+  // UTILITY: toggle visibility & text-color
+  function toggleHelp(elem, show) {
+    elem.style.display = show ? 'block' : 'none';
+  }
+  function mark(id, pass) {
+    document.getElementById(id)
+      .classList.toggle('has-text-success', pass);
+    document.getElementById(id)
+      .classList.toggle('has-text-danger', !pass);
+  }
+
+  // Username listener
+  username.addEventListener('input', () => {
+    const ok = username.value.length >=4 && username.value.length <=16;
+    toggleHelp(usernameHelp, !ok);
+    username.classList.toggle('is-danger', !ok);
+    username.classList.toggle('is-success', ok);
   });
+
+  // Email listener
+  email.addEventListener('input', () => {
+    const ok = email.checkValidity();
+    toggleHelp(emailHelp, !ok);
+    email.classList.toggle('is-danger', !ok);
+    email.classList.toggle('is-success', ok);
+  });
+
+  // Password listener
+  pw.addEventListener('input', () => {
+    let allOk = true;
+    Object.entries(pwChecks).forEach(([id, fn]) => {
+      const ok = fn(pw.value);
+      mark(id, ok);
+      if (!ok) allOk = false;
+    });
+    toggleHelp(passwordHelp, !allOk);
+    pw.classList.toggle('is-danger', !allOk);
+    pw.classList.toggle('is-success', allOk);
+  });
+
+  // Confirm-password check
+  function validateMatch(){
+    const ok = pw.value === cpw.value && pw.value !== '';
+    toggleHelp(pwMismatch, !ok);
+    cpw.classList.toggle('is-danger', !ok);
+    cpw.classList.toggle('is-success', ok);
+    return ok;
+  }
+  cpw.addEventListener('input', validateMatch);
+
+  // Final submit guard
+  form.addEventListener('submit', e => {
+    // trigger all checks
+    username.dispatchEvent(new Event('input'));
+    email.dispatchEvent(new Event('input'));
+    pw.dispatchEvent(new Event('input'));
+    validateMatch();
+
+    if (!username.checkValidity() ||
+        !email.checkValidity()    ||
+        !validateMatch()          ||
+        pwHelpVisible()
+    ) {
+      e.preventDefault();
+    }
+  });
+
+  function pwHelpVisible(){
+    return passwordHelp.style.display !== 'none';
+  }
+});
 </script>
 {% endblock %}
