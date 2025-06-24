@@ -20,7 +20,7 @@ def same_department(user_id):
 
 def has_ticket_access(ticket):
     """
-    Allow view/comment/edit if admin, IT Support, or same department as creator
+    Permit view, comment and edit if user is admin, IT Support, or in same department
     """
     return (
         current_user.role == 'admin'
@@ -30,7 +30,7 @@ def has_ticket_access(ticket):
 
 def _load_assignees(form):
     """
-    Admin sees all users; others only themselves
+    Admin sees all users; others see only themselves
     """
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
@@ -173,8 +173,7 @@ def comment_ticket(ticket_id):
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
     ticket  = comment.ticket
-    # Only admin, ticket owner or IT Support may delete?
-    # IT Support no longer allowed – remove that check
+    # Only admin or ticket owner may delete comments
     if current_user.role != 'admin' and ticket.created_by != current_user.id:
         abort(403)
     db.session.delete(comment)
@@ -187,17 +186,17 @@ def delete_comment(comment_id):
 def manage_users():
     if current_user.role != 'admin':
         abort(403)
-    users       = User.query.all()
-    departments = Department.query.all()
+    users        = User.query.all()
+    departments  = Department.query.all()
     dept_choices = [(d.id, d.name) for d in departments]
 
     forms = {}
     for user in users:
         form = UserAdminForm(obj=user)
-        form.role.data          = user.role
+        form.role.data           = user.role
         form.department_id.choices = dept_choices
-        form.department_id.data = user.department_id
-        forms[user.id]          = form
+        form.department_id.data  = user.department_id
+        forms[user.id]           = form
 
     if request.method == 'POST':
         user_id = int(request.form['user_id'])

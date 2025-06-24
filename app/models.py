@@ -10,12 +10,17 @@ class User(UserMixin, db.Model):
     email          = db.Column(db.String(120), unique=True, nullable=False)
     password_hash  = db.Column(db.String(255), nullable=False)
     role           = db.Column(db.String(20), nullable=False, default='user')
-    department_id  = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=True)
+    department_id  = db.Column(
+        db.Integer,
+        db.ForeignKey('department.id', ondelete='SET NULL'),
+        nullable=True
+    )
 
     # Explicit two-way link to Department
-    department     = db.relationship(
+    department = db.relationship(
         'Department',
-        back_populates='users'
+        back_populates='users',
+        passive_deletes=True
     )
 
     # Tickets this user created
@@ -23,9 +28,12 @@ class User(UserMixin, db.Model):
         'Ticket',
         back_populates='creator',
         foreign_keys='Ticket.created_by',
-        lazy=True, cascade="all, delete-orphan", passive_deletes=True
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
-    # Tickets assigned to this user
+    # Tickets assigned to this user (no cascade: deleting a user should not drop tickets,
+    # but created_by will cascade and assigned_to will be set null by FK)
     tickets_assigned = db.relationship(
         'Ticket',
         back_populates='assignee',
@@ -37,7 +45,9 @@ class User(UserMixin, db.Model):
     comments = db.relationship(
         'Comment',
         back_populates='author',
-        lazy=True, cascade="all, delete-orphan", passive_deletes=True
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
 
 
@@ -63,8 +73,16 @@ class Ticket(db.Model):
     description  = db.Column(db.Text, nullable=False)
     status       = db.Column(db.String(20), nullable=False, default='Open')
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    assigned_to  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by   = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    assigned_to  = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='SET NULL'),
+        nullable=True
+    )
 
     # User who created the ticket
     creator = db.relationship(
@@ -80,10 +98,13 @@ class Ticket(db.Model):
         foreign_keys=[assigned_to]
     )
 
+    # Comments on this ticket
     comments = db.relationship(
         'Comment',
         back_populates='ticket',
-        lazy=True
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
     )
 
 
@@ -91,16 +112,24 @@ class Comment(db.Model):
     __tablename__ = 'comment'
 
     id         = db.Column(db.Integer, primary_key=True)
-    ticket_id  = db.Column(db.Integer, db.ForeignKey('ticket.id'), nullable=False)
-    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'),   nullable=False)
+    ticket_id  = db.Column(
+        db.Integer,
+        db.ForeignKey('ticket.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    user_id    = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        nullable=False
+    )
     comment    = db.Column(db.Text, nullable=False)
     timestamp  = db.Column(db.DateTime, default=datetime.utcnow)
 
-    author     = db.relationship(
+    author = db.relationship(
         'User',
         back_populates='comments'
     )
-    ticket     = db.relationship(
+    ticket = db.relationship(
         'Ticket',
         back_populates='comments'
     )

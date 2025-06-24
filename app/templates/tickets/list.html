@@ -8,7 +8,17 @@
         <div class="is-flex is-justify-content-space-between is-align-items-center">
           <div>
             <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
-              <strong>[{{ t.status }}]</strong> {{ t.title }}
+              <strong>[
+                {% if t.status == 'Open' %}
+                  <span class="tag is-success">Open</span>
+                {% elif t.status == 'In Progress' %}
+                  <span class="tag is-warning">In Progress</span>
+                {% elif t.status == 'Closed' %}
+                  <span class="tag is-danger">Closed</span>
+                {% else %}
+                  {{ t.status }}
+                {% endif %}
+              ]</strong> {{ t.title }}
             </a>
             <br>
             <small class="has-text-grey">

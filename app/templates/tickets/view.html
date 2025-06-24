@@ -14,7 +14,17 @@
 
     <div class="box">
       <p>{{ ticket.description }}</p>
-      <p><strong>Status:</strong> {{ ticket.status }}</p>
+      <p><strong>Status:</strong>
+        {% if ticket.status == 'Open' %}
+          <span class="tag is-success">{{ ticket.status }}</span>
+        {% elif ticket.status == 'In Progress' %}
+          <span class="tag is-warning">{{ ticket.status }}</span>
+        {% elif ticket.status == 'Closed' %}
+          <span class="tag is-danger">{{ ticket.status }}</span>
+        {% else %}
+          {{ ticket.status }}
+        {% endif %}
+      </p>
       <p><strong>Assigned to:</strong>
         {{ ticket.assignee.username if ticket.assignee else 'Unassigned' }}
       </p>
