@@ -15,10 +15,13 @@ def _load_assignees(form):
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
 
+def is_it_support():
+    return getattr(current_user.department, "name", None) == 'IT Support'
+
 @tickets_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role == 'admin':
+    if current_user.role == 'admin' or is_it_support():
         total_tickets = Ticket.query.count()
         open_tickets = Ticket.query.filter_by(status='Open').count()
         in_progress = Ticket.query.filter_by(status='In Progress').count()
@@ -45,9 +48,8 @@ def list_tickets():
     page            = request.args.get('page', 1, type=int)
     per_page        = 10
 
-    # only your tickets unless admin
     query = Ticket.query
-    if current_user.role != 'admin':
+    if current_user.role != 'admin' and not is_it_support():
         query = query.filter_by(created_by=current_user.id)
 
     if status_filter:
@@ -93,9 +95,13 @@ def create_ticket():
 @login_required
 def view_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    # only creator or admin can view details
-    if current_user.role != 'admin' and ticket.created_by != current_user.id:
+    if (
+        current_user.role != 'admin'
+        and not is_it_support()
+        and ticket.created_by != current_user.id
+    ):
         abort(403)
+
     comment_form = CommentForm()
     return render_template(
         'view.html',
@@ -103,12 +109,17 @@ def view_ticket(ticket_id):
         comment_form=comment_form
     )
 
-@tickets_bp.route('/<int:ticket_id>/edit', methods=['GET','POST'])
+@tickets_bp.route('/<int:ticket_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if current_user.role != 'admin' and ticket.created_by != current_user.id:
+    if (
+        current_user.role != 'admin'
+        and not is_it_support()
+        and ticket.created_by != current_user.id
+    ):
         abort(403)
+
     form = TicketForm(obj=ticket)
     _load_assignees(form)
     if form.validate_on_submit():
@@ -119,6 +130,7 @@ def edit_ticket(ticket_id):
         db.session.commit()
         flash('Ticket updated', 'success')
         return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
+
     return render_template('form.html', form=form, action="Edit")
 
 @tickets_bp.route('/<int:ticket_id>/delete', methods=['POST'])
@@ -136,8 +148,11 @@ def delete_ticket(ticket_id):
 @login_required
 def comment_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    # only creator or admin may comment
-    if current_user.role != 'admin' and ticket.created_by != current_user.id:
+    if (
+        current_user.role != 'admin'
+        and not is_it_support()
+        and ticket.created_by != current_user.id
+    ):
         abort(403)
 
     form = CommentForm()
