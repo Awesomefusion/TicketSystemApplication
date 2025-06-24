@@ -1,54 +1,69 @@
+{# templates/tickets/view.html #}
 {% extends 'base.html' %}
+
 {% block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="title">{{ ticket.title }}</h1>
-
-    <div class="box">
-      <p><strong>Status:</strong> {{ ticket.status }}</p>
-      <p><strong>Assigned to:</strong> {{ ticket.assignee.username if ticket.assignee else 'Unassigned' }}</p>
-      <p><strong>Description:</strong></p>
-      <p>{{ ticket.description }}</p>
-    </div>
-
-    {% if current_user.role == 'admin'
-          or current_user.department.name == 'IT Support'
-          or current_user.department_id == ticket.creator.department_id %}
-      <a class="button is-warning" href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}">Edit</a>
-    {% endif %}
-
-    {% if current_user.role == 'admin' %}
-      <form method="post" action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}" style="display:inline;">
-        <button class="button is-danger" type="submit">Delete</button>
-      </form>
-    {% endif %}
-
-    <hr>
-    <h2 class="subtitle">Comments</h2>
-    {% for comment in ticket.comments %}
+  <section class="section">
+    <div class="container">
+      <h1 class="title">{{ ticket.title }}</h1>
       <div class="box">
-        <p>{{ comment.comment }}</p>
-        <p class="is-size-7 has-text-grey">— {{ comment.author.username }}, {{ comment.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-      </div>
-    {% else %}
-      <p>No comments yet.</p>
-    {% endfor %}
+        <p>{{ ticket.description }}</p>
+        <p><strong>Status:</strong> {{ ticket.status }}</p>
+        <p><strong>Assigned to:</strong>
+          {{ ticket.assignee.username if ticket.assignee else 'Unassigned' }}
+        </p>
 
-    {% if current_user.role == 'admin'
-          or current_user.department.name == 'IT Support'
-          or current_user.department_id == ticket.creator.department_id %}
-      <form method="post" action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}">
+        {% if current_user.role == 'admin' or current_user.department.name == 'IT Support' %}
+          <div class="buttons">
+            <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}"
+               class="button is-info">Edit</a>
+            <form action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
+                  method="post" style="display:inline;">
+              {{ csrf_token() }}
+              <button type="submit" class="button is-danger">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+      <h2 class="subtitle">Comments</h2>
+      <ul>
+        {% for comment in ticket.comments %}
+          <li class="box">
+            <p>
+              <strong>{{ comment.author.username }}</strong>
+              <em>at {{ comment.timestamp.strftime('%Y-%m-%d %H:%M') }}</em>:
+            </p>
+            <p>{{ comment.comment }}</p>
+
+            {% if current_user.role == 'admin' or current_user.department.name == 'IT Support' %}
+              <form action="{{ url_for('tickets.delete_comment', comment_id=comment.id) }}"
+                    method="post" style="display:inline;">
+                {{ csrf_token() }}
+                <button type="submit" class="button is-small is-danger">
+                  Delete
+                </button>
+              </form>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+
+      <h3 class="subtitle">Add a comment</h3>
+      <form action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}"
+            method="post">
+        {{ comment_form.hidden_tag() }}
         <div class="field">
-          <label class="label">Add Comment</label>
+          <label class="label">{{ comment_form.comment.label }}</label>
           <div class="control">
-            <textarea class="textarea" name="comment" required></textarea>
+            {{ comment_form.comment(class="textarea") }}
           </div>
         </div>
         <div class="control">
-          <button type="submit" class="button is-link">Post Comment</button>
+          <button type="submit" class="button is-primary">
+            Post Comment
+          </button>
         </div>
       </form>
-    {% endif %}
-  </div>
-</section>
+    </div>
+  </section>
 {% endblock %}
