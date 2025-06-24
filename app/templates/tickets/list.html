@@ -2,19 +2,36 @@
 {% block content %}
   <h2 class="title is-4">All Tickets</h2>
 
-  <ul>
+  <ul class="box">
     {% for t in tickets %}
-      <li>
-        <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
-          [{{ t.status }}] {{ t.title }}
-        </a>
+      <li class="mb-3" style="list-style: none; padding: 0;">
+        <div class="is-flex is-justify-content-space-between is-align-items-center">
+          <div>
+            <a href="{{ url_for('tickets.view_ticket', ticket_id=t.id) }}">
+              <strong>[{{ t.status }}]</strong> {{ t.title }}
+            </a>
+            <br>
+            <small class="has-text-grey">
+              Created by: {{ t.creator.username }}
+              {% if t.creator.department %}
+                — <span class="tag is-light">{{ t.creator.department.name }}</span>
+              {% endif %}
+            </small>
+          </div>
+          <div>
+            {% if current_user.role == 'admin' or current_user.department.name == 'IT Support' or current_user.department_id == t.creator.department_id %}
+              <a class="button is-small is-info" href="{{ url_for('tickets.edit_ticket', ticket_id=t.id) }}">
+                Edit
+              </a>
+            {% endif %}
+          </div>
+        </div>
       </li>
     {% else %}
       <li>No tickets found.</li>
     {% endfor %}
   </ul>
 
-  {# --- pagination controls, NO more <li> tags here --- #}
   {% if pagination.pages > 1 %}
     <nav class="pagination" role="navigation" aria-label="pagination">
       {% if pagination.has_prev %}
@@ -47,6 +64,7 @@
         {% endfor %}
       </div>
     </nav>
-  <a class="button is-primary" href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
   {% endif %}
+
+  <a class="button is-primary mt-4" href="{{ url_for('tickets.create_ticket') }}">+ New Ticket</a>
 {% endblock %}

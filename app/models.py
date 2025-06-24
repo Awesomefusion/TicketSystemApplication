@@ -66,18 +66,21 @@ class Ticket(db.Model):
     created_by   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     assigned_to  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
-    creator      = db.relationship(
+    # User who created the ticket
+    creator = db.relationship(
         'User',
         back_populates='tickets_created',
         foreign_keys=[created_by]
     )
-    assignee     = db.relationship(
+
+    # User assigned to the ticket
+    assignee = db.relationship(
         'User',
         back_populates='tickets_assigned',
         foreign_keys=[assigned_to]
     )
 
-    comments     = db.relationship(
+    comments = db.relationship(
         'Comment',
         back_populates='ticket',
         lazy=True

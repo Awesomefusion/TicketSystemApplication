@@ -11,12 +11,19 @@ tickets_bp = Blueprint(
     template_folder='../templates/tickets'
 )
 
+def is_it_support():
+    return getattr(current_user.department, "name", None) == 'IT Support'
+
+def same_department(user_id):
+    ticket_user = User.query.get(user_id)
+    return ticket_user is not None and ticket_user.department_id == current_user.department_id
+
+def has_ticket_access(ticket):
+    return current_user.role == 'admin' or is_it_support() or same_department(ticket.created_by)
+
 def _load_assignees(form):
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
-
-def is_it_support():
-    return getattr(current_user.department, "name", None) == 'IT Support'
 
 @tickets_bp.route('/dashboard')
 @login_required
@@ -49,8 +56,10 @@ def list_tickets():
     per_page        = 10
 
     query = Ticket.query
+
     if current_user.role != 'admin' and not is_it_support():
-        query = query.filter_by(created_by=current_user.id)
+        query = query.join(User, Ticket.created_by == User.id) \
+                     .filter(User.department_id == current_user.department_id)
 
     if status_filter:
         query = query.filter_by(status=status_filter)
@@ -95,11 +104,7 @@ def create_ticket():
 @login_required
 def view_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if (
-        current_user.role != 'admin'
-        and not is_it_support()
-        and ticket.created_by != current_user.id
-    ):
+    if not has_ticket_access(ticket):
         abort(403)
 
     comment_form = CommentForm()
@@ -113,11 +118,7 @@ def view_ticket(ticket_id):
 @login_required
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if (
-        current_user.role != 'admin'
-        and not is_it_support()
-        and ticket.created_by != current_user.id
-    ):
+    if not has_ticket_access(ticket):
         abort(403)
 
     form = TicketForm(obj=ticket)
@@ -148,11 +149,7 @@ def delete_ticket(ticket_id):
 @login_required
 def comment_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if (
-        current_user.role != 'admin'
-        and not is_it_support()
-        and ticket.created_by != current_user.id
-    ):
+    if not has_ticket_access(ticket):
         abort(403)
 
     form = CommentForm()

@@ -7,15 +7,12 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-# bring in your CLI hooks
 from .seed import register_commands
-
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
 
-    # init extensions
     db.init_app(app)
     login_manager.init_app(app)
 
@@ -42,7 +39,8 @@ def create_app():
     def health():
         return 'OK', 200
 
-    # custom error pages
+    # --- Custom error pages ---
+
     @app.errorhandler(403)
     def forbidden(e):
         return render_template('errors/403.html'), 403
@@ -51,7 +49,6 @@ def create_app():
     def not_found(e):
         return render_template('errors/404.html'), 404
 
-    # create tables and hook in CLI commands
     with app.app_context():
         db.create_all()
         register_commands(app)

@@ -30,8 +30,8 @@ def many_tickets(app, admin_user):
     # no return needed
 
 def count_list_items(html):
-    """Rough count of <li> in the tickets list"""
-    return html.count('<li>')
+    """Rough count of ticket list items (<li class="mb-3">)"""
+    return html.count('<li class="mb-3"')
 
 def test_default_page_shows_10(client, admin_user, many_tickets):
     login(client, admin_user.username, 'adminpass')

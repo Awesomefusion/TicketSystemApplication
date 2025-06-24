@@ -11,13 +11,16 @@
       <p>{{ ticket.description }}</p>
     </div>
 
-    {% if current_user.id == ticket.created_by or current_user.role == 'admin' %}
-    <a class="button is-warning" href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}">Edit</a>
+    {% if current_user.role == 'admin'
+          or current_user.department.name == 'IT Support'
+          or current_user.department_id == ticket.creator.department_id %}
+      <a class="button is-warning" href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}">Edit</a>
     {% endif %}
+
     {% if current_user.role == 'admin' %}
-    <form method="post" action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}" style="display:inline;">
-      <button class="button is-danger" type="submit">Delete</button>
-    </form>
+      <form method="post" action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}" style="display:inline;">
+        <button class="button is-danger" type="submit">Delete</button>
+      </form>
     {% endif %}
 
     <hr>
@@ -31,18 +34,20 @@
       <p>No comments yet.</p>
     {% endfor %}
 
-    {% if current_user.id == ticket.created_by or current_user.role == 'admin' %}
-    <form method="post" action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}">
-      <div class="field">
-        <label class="label">Add Comment</label>
-        <div class="control">
-          <textarea class="textarea" name="comment" required></textarea>
+    {% if current_user.role == 'admin'
+          or current_user.department.name == 'IT Support'
+          or current_user.department_id == ticket.creator.department_id %}
+      <form method="post" action="{{ url_for('tickets.comment_ticket', ticket_id=ticket.id) }}">
+        <div class="field">
+          <label class="label">Add Comment</label>
+          <div class="control">
+            <textarea class="textarea" name="comment" required></textarea>
+          </div>
         </div>
-      </div>
-      <div class="control">
-        <button type="submit" class="button is-link">Post Comment</button>
-      </div>
-    </form>
+        <div class="control">
+          <button type="submit" class="button is-link">Post Comment</button>
+        </div>
+      </form>
     {% endif %}
   </div>
 </section>

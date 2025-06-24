@@ -1,8 +1,6 @@
 import pytest
 from app import db
-from app.models import Ticket, Comment
-from werkzeug.security import generate_password_hash
-
+from app.models import Ticket
 
 def login(client, identifier, password):
     return client.post(

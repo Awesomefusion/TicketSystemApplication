@@ -3,7 +3,6 @@ from app import create_app, db
 from app.models import User, Ticket, Comment, Department
 from werkzeug.security import generate_password_hash
 
-
 @pytest.fixture
 def app(monkeypatch):
     # Ensure SECRET_KEY is set for testing
@@ -25,39 +24,45 @@ def app(monkeypatch):
         db.session.remove()
         db.drop_all()
 
-
 @pytest.fixture
 def client(app):
     return app.test_client()
-
 
 @pytest.fixture
 def runner(app):
     return app.test_cli_runner()
 
-
 @pytest.fixture
 def admin_user(app):
-    # Create a default admin user
+    # Create department for admin (IT Support)
+    dept = Department(name="IT Support")
+    db.session.add(dept)
+    db.session.commit()
+
     admin = User(
         username="admin",
         email="admin@example.com",
         password_hash=generate_password_hash("adminpass"),
-        role="admin"
+        role="admin",
+        department_id=dept.id
     )
     db.session.add(admin)
     db.session.commit()
     return admin
 
-
 @pytest.fixture
 def normal_user(app):
-    # Create a default normal user
+    # Create department for normal user (Sales)
+    dept = Department(name="Sales")
+    db.session.add(dept)
+    db.session.commit()
+
     user = User(
         username="testuser",
         email="user@example.com",
         password_hash=generate_password_hash("userpass"),
-        role="user"
+        role="user",
+        department_id=dept.id
     )
     db.session.add(user)
     db.session.commit()
