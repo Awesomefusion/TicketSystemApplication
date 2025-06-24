@@ -1,43 +1,63 @@
+{# templates/tickets/form.html #}
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2 class="title is-4">{{ action }} Ticket</h2>
-  <form method="post">
-    {{ form.hidden_tag() }}
+<section class="section">
+  <div class="container">
+    <h1 class="title">{{ action }} Ticket</h1>
+    <form method="post" action="">
+      {{ form.hidden_tag() }}
 
-    <div class="field">
-      <label class="label">{{ form.title.label }}</label>
-      <div class="control">
-        {{ form.title(class="input") }}
+      <div class="field">
+        <label class="label">{{ form.title.label }}</label>
+        <div class="control">
+          {{ form.title(class="input") }}
+        </div>
       </div>
-    </div>
 
-    <div class="field">
-      <label class="label">{{ form.description.label }}</label>
-      <div class="control">
-        {{ form.description(class="textarea") }}
+      <div class="field">
+        <label class="label">{{ form.description.label }}</label>
+        <div class="control">
+          {{ form.description(class="textarea") }}
+        </div>
       </div>
-    </div>
 
-    <div class="field">
-      <label class="label">{{ form.status.label }}</label>
-      <div class="control">
-        {{ form.status(class="select") }}
+      <div class="field">
+        <label class="label">{{ form.status.label }}</label>
+        <div class="control">
+          {{ form.status(class="select") }}
+        </div>
       </div>
-    </div>
 
-    <div class="field">
-      <label class="label">{{ form.assigned_to.label }}</label>
-      <div class="control">
-        {{ form.assigned_to(class="select") }}
+      {% if current_user.role == 'admin' %}
+      <div class="field">
+        <label class="label">{{ form.assigned_to.label }}</label>
+        <div class="control">
+          {{ form.assigned_to(class="select") }}
+        </div>
       </div>
-    </div>
+      {% endif %}
 
-    <div class="field">
-      <div class="control">
-        {{ form.submit(class="button is-primary") }}
+      <div class="field is-grouped">
+        <div class="control">
+          <button type="submit" class="button is-primary">{{ action }}</button>
+        </div>
+
+        {% if action == 'Edit'
+              and (current_user.role == 'admin'
+                   or ticket.created_by == current_user.id) %}
+        <div class="control">
+          <form action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
+                method="post" style="display:inline;">
+            <button type="submit" class="button is-danger"
+                    onclick="return confirm('Really delete this ticket?');">
+              Delete
+            </button>
+          </form>
+        </div>
+        {% endif %}
       </div>
-    </div>
-  </form>
-</div>
+    </form>
+  </div>
+</section>
 {% endblock %}

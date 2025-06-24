@@ -1,3 +1,4 @@
+{# templates/tickets/view.html #}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -7,18 +8,17 @@
     <div class="box">
       <p>{{ ticket.description }}</p>
       <p><strong>Status:</strong> {{ ticket.status }}</p>
-      <p><strong>Assigned to:</strong> {{ ticket.assignee.username if ticket.assignee else 'Unassigned' }}</p>
+      <p><strong>Assigned to:</strong>
+        {{ ticket.assignee.username if ticket.assignee else 'Unassigned' }}
+      </p>
 
       {% if current_user.role == 'admin'
-            or current_user.department.name == 'IT Support'
             or ticket.created_by == current_user.id %}
       <div class="buttons">
-        <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}" class="button is-info">
-          Edit
-        </a>
+        <a href="{{ url_for('tickets.edit_ticket', ticket_id=ticket.id) }}"
+           class="button is-info">Edit</a>
         <form action="{{ url_for('tickets.delete_ticket', ticket_id=ticket.id) }}"
-              method="post"
-              style="display:inline;">
+              method="post" style="display:inline;">
           <button type="submit" class="button is-danger"
                   onclick="return confirm('Really delete this ticket?');">
             Delete
@@ -39,11 +39,9 @@
         <p>{{ comment.comment }}</p>
 
         {% if current_user.role == 'admin'
-              or current_user.department.name == 'IT Support'
               or ticket.created_by == current_user.id %}
         <form action="{{ url_for('tickets.delete_comment', comment_id=comment.id) }}"
-              method="post"
-              style="display:inline;">
+              method="post" style="display:inline;">
           <button type="submit" class="button is-small is-danger"
                   onclick="return confirm('Really delete this comment?');">
             Delete
@@ -65,9 +63,7 @@
         </div>
       </div>
       <div class="control">
-        <button type="submit" class="button is-primary">
-          Post Comment
-        </button>
+        <button type="submit" class="button is-primary">Post Comment</button>
       </div>
     </form>
   </div>

@@ -1,19 +1,55 @@
+{# templates/tickets/admin_users.html #}
 {% extends 'base.html' %}
+
 {% block content %}
-  <h2 class="title is-4">User Management</h2>
-  {% for user in users %}
-    <div class="user-form">
-      <h4>{{ user.username }} ({{ user.email }})</h4>
-        <form action="{{ url_for('tickets.delete_user', user_id=user.id) }}"
-              method="post"
-              style="display:inline;">
-          {{ forms[user.id].hidden_tag() }}
-          <button type="submit" class="button is-danger is-small"
-                  onclick="return confirm('Really delete {{ user.username }}?');">
-            Delete
-          </button>
-        </form>
-    </div>
-    <hr>
-  {% endfor %}
+<section class="section">
+  <div class="container">
+    <h1 class="title">Manage Users</h1>
+    <table class="table is-fullwidth">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Department</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <form method="post" action="{{ url_for('tickets.manage_users') }}">
+              {{ forms[user.id].hidden_tag() }}
+              <input type="hidden" name="user_id" value="{{ user.id }}">
+              {{ forms[user.id].role(class="select") }}
+          </td>
+          <td>
+              {{ forms[user.id].department_id(class="select") }}
+          </td>
+          <td>
+              <button type="submit" class="button is-small is-primary">Update</button>
+            </form>
+
+            {% if current_user.id != user.id %}
+            <form method="post"
+                  action="{{ url_for('tickets.delete_user', user_id=user.id) }}"
+                  style="display:inline;">
+              {{ forms[user.id].hidden_tag() }}
+              <button type="submit"
+                      class="button is-small is-danger"
+                      onclick="return confirm('Delete user {{ user.username }}?');">
+                Delete
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}
