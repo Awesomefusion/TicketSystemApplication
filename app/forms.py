@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField, BooleanField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Email, Length, EqualTo
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Regexp
 
 
 class LoginForm(FlaskForm):
@@ -14,12 +14,41 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm Password',
-                                     validators=[DataRequired(), EqualTo('password')])
-    department_id = SelectField('Department', coerce=int)
+    username = StringField(
+        'Username',
+        validators=[
+            DataRequired(),
+            Length(min=4, max=16),
+            Regexp(r'^[A-Za-z0-9_]+$', message='Letters, numbers and _ only')
+        ]
+    )
+    email = StringField(
+        'Email',
+        validators=[DataRequired(), Email()]
+    )
+    password = PasswordField(
+        'Password',
+        validators=[
+            DataRequired(),
+            Length(min=8, max=16),
+            Regexp(
+              r'(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])',
+              message='Must include upper, lower, digit & special'
+            )
+        ]
+    )
+    confirm_password = PasswordField(
+        'Confirm Password',
+        validators=[
+            DataRequired(),
+            EqualTo('password', message='Passwords must match')
+        ]
+    )
+    department_id = SelectField(
+        'Department',
+        coerce=int,
+        validators=[DataRequired()]
+    )
     submit = SubmitField('Register')
 
 

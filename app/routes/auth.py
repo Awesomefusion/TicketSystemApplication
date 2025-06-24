@@ -35,28 +35,30 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-
-    # load up-to-date department list
-    depts = Department.query.all()
-    form.department_id.choices = [(d.id, d.name) for d in depts]
-
-    # if you haven’t seeded any departments yet, inject a dummy choice
-    if not form.department_id.choices:
-        form.department_id.choices = [('', 'No departments available')]
+    # populate the dropdown every time
+    form.department_id.choices = [
+        (d.id, d.name) for d in Department.query.order_by(Department.name)
+    ]
 
     if form.validate_on_submit():
-        hashed_pw = generate_password_hash(form.password.data)
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password_hash=hashed_pw,
-            department_id=form.department_id.data or None
-        )
-        db.session.add(user)
-        db.session.commit()
-        flash('Registration successful! You may now log in.', 'success')
-        return redirect(url_for('auth.login'))
+        # double-check no duplicate
+        if User.query.filter_by(username=form.username.data).first():
+            flash('Username already taken', 'error')
+        elif User.query.filter_by(email=form.email.data).first():
+            flash('Email already registered', 'error')
+        else:
+            new_user = User(
+                username=form.username.data,
+                email=form.email.data,
+                password_hash=generate_password_hash(form.password.data),
+                department_id=form.department_id.data
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful! You may now log in.', 'success')
+            return redirect(url_for('auth.login'))
 
+    # either GET or validation failed
     return render_template('register.html', form=form)
 
 
