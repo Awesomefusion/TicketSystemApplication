@@ -20,7 +20,7 @@ def same_department(user_id):
 
 def has_ticket_access(ticket):
     """
-    Allow view/comment if admin, IT Support, or same department as creator
+    Allow view/comment/edit if admin, IT Support, or same department as creator
     """
     return (
         current_user.role == 'admin'
@@ -121,8 +121,8 @@ def view_ticket(ticket_id):
 @login_required
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    # Only admin or IT Support may edit
-    if current_user.role != 'admin' and not is_it_support():
+    # Admin, IT Support, or creator in same department may edit
+    if not has_ticket_access(ticket):
         abort(403)
 
     form = TicketForm(obj=ticket)
