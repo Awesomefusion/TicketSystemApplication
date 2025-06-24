@@ -12,7 +12,6 @@ tickets_bp = Blueprint(
 )
 
 def _load_assignees(form):
-    # only admins see all assignees, others just themselves
     users = User.query.all() if current_user.role == 'admin' else [current_user]
     form.assigned_to.choices = [(u.id, u.username) for u in users]
 
@@ -46,16 +45,16 @@ def list_tickets():
     page            = request.args.get('page', 1, type=int)
     per_page        = 10
 
-    # everyone sees all tickets
+    # only your tickets unless admin
     query = Ticket.query
+    if current_user.role != 'admin':
+        query = query.filter_by(created_by=current_user.id)
 
-    # apply filters
     if status_filter:
         query = query.filter_by(status=status_filter)
     if assignee_filter:
         query = query.filter_by(assigned_to=assignee_filter)
 
-    # paginate, newest first, don't error_out on bad page numbers
     pagination = query.order_by(Ticket.created_at.desc()) \
                       .paginate(page=page, per_page=per_page, error_out=False)
 
@@ -64,8 +63,8 @@ def list_tickets():
 
     return render_template(
         'list.html',
-        tickets=tickets,          # up to per_page tickets for this page
-        pagination=pagination,    # for your pagination controls
+        tickets=tickets,
+        pagination=pagination,
         assignees=assignees,
         status_filter=status_filter,
         assignee_filter=assignee_filter
@@ -94,7 +93,9 @@ def create_ticket():
 @login_required
 def view_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    # anyone can view any ticket now
+    # only creator or admin can view details
+    if current_user.role != 'admin' and ticket.created_by != current_user.id:
+        abort(403)
     comment_form = CommentForm()
     return render_template(
         'view.html',
@@ -106,16 +107,8 @@ def view_ticket(ticket_id):
 @login_required
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-
-    # edit permission: admin, IT Support, or owner
-    user_dept = current_user.department.name if current_user.department else None
-    if not (
-        current_user.role == 'admin'
-        or user_dept == 'IT Support'
-        or ticket.created_by == current_user.id
-    ):
+    if current_user.role != 'admin' and ticket.created_by != current_user.id:
         abort(403)
-
     form = TicketForm(obj=ticket)
     _load_assignees(form)
     if form.validate_on_submit():
@@ -143,32 +136,25 @@ def delete_ticket(ticket_id):
 @login_required
 def comment_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-
-    # comment permission: admin, IT Support, or same-department-as-creator
-    user_dept      = current_user.department.name if current_user.department else None
-    creator_dept_id = ticket.creator.department_id
-    if not (
-        current_user.role == 'admin'
-        or user_dept == 'IT Support'
-        or current_user.department_id == creator_dept_id
-    ):
+    # only creator or admin may comment
+    if current_user.role != 'admin' and ticket.created_by != current_user.id:
         abort(403)
 
     form = CommentForm()
-    if form.validate_on_submit():
-        new_comment = Comment(
-            ticket_id=ticket.id,
-            user_id=current_user.id,
-            comment=form.comment.data
-        )
-        db.session.add(new_comment)
-        db.session.commit()
-        flash('Comment added', 'success')
-    else:
-        flash('Failed to post comment', 'error')
+    if not form.validate_on_submit():
+        abort(400)
+
+    new_comment = Comment(
+        ticket_id=ticket.id,
+        user_id=current_user.id,
+        comment=form.comment.data
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    flash('Comment added', 'success')
     return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
 
-@tickets_bp.route('/admin/users', methods=['GET', 'POST'])
+@tickets_bp.route('/admin/users', methods=['GET','POST'])
 @login_required
 def manage_users():
     if current_user.role != 'admin':
@@ -181,7 +167,7 @@ def manage_users():
     forms = {}
     for user in users:
         form = UserAdminForm(obj=user)
-        form.role.data = user.role
+        form.role.data          = user.role
         form.department_id.choices = department_choices
         form.department_id.data = user.department_id
         forms[user.id] = form
