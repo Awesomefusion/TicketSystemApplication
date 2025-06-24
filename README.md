@@ -1,4 +1,4 @@
-# Secure Ticket Management System
+# Ticket System Application
 
 ## Description
 A simple, role-based ticketing application built with Python and Flask. Users can register, log in and manage support tickets, while administrators oversee assignments and maintain system integrity. The code is containerised with Docker and delivered via a CI/CD pipeline using GitHub Actions.
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ## Setup .env file
 
-Creating a .env file in the root which hides secrets not meant for git should look like this:
+Create a .env file in the root directory which hides secrets not meant for git, looks like this:
 
 SECRET_KEY={secret_key}
 
