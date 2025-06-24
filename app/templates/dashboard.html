@@ -1,9 +1,43 @@
 {% extends 'base.html' %}
+
 {% block content %}
-  <h2 class="title is-4">Dashboard</h2>
-  <p>Total Tickets: {{ total }}</p>
-  <p>Open: {{ open }}</p>
-  <p>In Progress: {{ in_progress }}</p>
-  <p>Closed: {{ closed }}</p>
-  <p><a href="{{ url_for('tickets.list_tickets') }}">View all tickets</a></p>
+<section class="section">
+  <div class="container">
+    <div class="columns is-multiline is-variable is-4">
+
+      <div class="column is-one-quarter">
+        <div class="notification is-primary has-text-centered"
+             style="display:flex; align-items:center; justify-content:center; flex-direction:column; height:180px;">
+          <p class="heading">Total Tickets</p>
+          <p class="title is-2">{{ total }}</p>
+        </div>
+      </div>
+
+      <div class="column is-one-quarter">
+        <div class="notification is-success has-text-centered"
+             style="display:flex; align-items:center; justify-content:center; flex-direction:column; height:180px;">
+          <p class="heading">Open</p>
+          <p class="title is-2">{{ open }}</p>
+        </div>
+      </div>
+
+      <div class="column is-one-quarter">
+        <div class="notification is-warning has-text-centered"
+             style="display:flex; align-items:center; justify-content:center; flex-direction:column; height:180px;">
+          <p class="heading">In Progress</p>
+          <p class="title is-2">{{ in_progress }}</p>
+        </div>
+      </div>
+
+      <div class="column is-one-quarter">
+        <div class="notification is-danger has-text-centered"
+             style="display:flex; align-items:center; justify-content:center; flex-direction:column; height:180px;">
+          <p class="heading">Closed</p>
+          <p class="title is-2">{{ closed }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 {% endblock %}
