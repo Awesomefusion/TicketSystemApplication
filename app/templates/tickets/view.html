@@ -1,10 +1,17 @@
-{# templates/tickets/view.html #}
 {% extends 'base.html' %}
 
 {% block content %}
 <section class="section">
   <div class="container">
+    {# Back button #}
+    <div class="mb-4">
+      <a href="{{ url_for('tickets.list_tickets') }}" class="button is-light">
+        &larr; Back to Tickets
+      </a>
+    </div>
+
     <h1 class="title">{{ ticket.title }}</h1>
+
     <div class="box">
       <p>{{ ticket.description }}</p>
       <p><strong>Status:</strong> {{ ticket.status }}</p>
