@@ -142,7 +142,11 @@ def edit_ticket(ticket_id):
 def delete_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     # Only admin or IT Support may delete
-    if current_user.role != 'admin' and not is_it_support():
+    if (
+        current_user.role != 'admin'
+        and not is_it_support()
+        and ticket.created_by != current_user.id
+    ):
         abort(403)
     db.session.delete(ticket)
     db.session.commit()
@@ -172,14 +176,21 @@ def comment_ticket(ticket_id):
 @login_required
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
-    # Only admin or IT Support may delete comments
-    if current_user.role != 'admin' and not is_it_support():
+    ticket  = comment.ticket
+
+    # Only admin, IT Support, or the ticket’s creator may delete comments
+    if (
+        current_user.role != 'admin'
+        and not is_it_support()
+        and ticket.created_by != current_user.id
+    ):
         abort(403)
-    ticket_id = comment.ticket_id
+
     db.session.delete(comment)
     db.session.commit()
     flash('Comment deleted', 'warning')
-    return redirect(url_for('tickets.view_ticket', ticket_id=ticket_id))
+    return redirect(url_for('tickets.view_ticket', ticket_id=ticket.id))
+
 
 @tickets_bp.route('/admin/users', methods=['GET', 'POST'])
 @login_required
@@ -210,3 +221,20 @@ def manage_users():
             return redirect(url_for('tickets.manage_users'))
 
     return render_template('admin_users.html', users=users, forms=forms)
+
+@tickets_bp.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    user = User.query.get_or_404(user_id)
+
+    # Optional: prevent self-delete if you want
+    if user.id == current_user.id:
+        flash("You cannot delete yourself.", "warning")
+        return redirect(url_for('tickets.manage_users'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(f"Deleted user {user.username}.", "warning")
+    return redirect(url_for('tickets.manage_users'))

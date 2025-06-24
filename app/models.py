@@ -23,7 +23,7 @@ class User(UserMixin, db.Model):
         'Ticket',
         back_populates='creator',
         foreign_keys='Ticket.created_by',
-        lazy=True
+        lazy=True, cascade="all, delete-orphan", passive_deletes=True
     )
     # Tickets assigned to this user
     tickets_assigned = db.relationship(
@@ -37,7 +37,7 @@ class User(UserMixin, db.Model):
     comments = db.relationship(
         'Comment',
         back_populates='author',
-        lazy=True
+        lazy=True, cascade="all, delete-orphan", passive_deletes=True
     )
 
 
