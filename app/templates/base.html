@@ -1,58 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Ticket System</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or 'Ticket System' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='bulma.min.css') }}">
 </head>
 <body>
-  <nav class="navbar is-light mb-4" role="navigation" aria-label="main navigation">
-    <div class="navbar-menu is-active">
-      <div class="navbar-start">
-        {% if current_user.is_authenticated %}
-        <b><span class="navbar-item">Logged in as {{ current_user.username }}</span></b>
-          <a class="navbar-item" href="{{ url_for('tickets.list_tickets') }}">Tickets</a>
-          <a class="navbar-item" href="{{ url_for('tickets.dashboard') }}">Dashboard</a>
-          {% if current_user.role == 'admin' %}
-            <a class="navbar-item" href="{{ url_for('tickets.manage_users') }}">Admin Panel</a>
-          {% endif %}
-          <a class="navbar-item" href="{{ url_for('auth.logout') }}">Logout</a>
-        {% else %}
-          <a class="navbar-item" href="{{ url_for('auth.login') }}">Login</a>
-          <a class="navbar-item" href="{{ url_for('auth.register') }}">Register</a>
-        {% endif %}
-      </div>
-    </div>
-  </nav>
+  {% include 'navbar.html' %}
 
   <section class="section">
     <div class="container">
-      {% with messages = get_flashed_messages() %}
+
+      {# Flash messages #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="notification is-info">
-            {% for msg in messages %}
-              <p>{{ msg }}</p>
+          <div id="flash-container">
+            {% for category, message in messages %}
+              <div class="notification {{ 'is-success' if category == 'success' else 'is-danger' }}">
+                <button class="delete"></button>
+                {{ message }}
+              </div>
             {% endfor %}
           </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              document.querySelectorAll('#flash-container .delete').forEach(function ($btn) {
+                var $notif = $btn.parentNode;
+                $btn.addEventListener('click', function () {
+                  $notif.remove();
+                });
+              });
+              setTimeout(function () {
+                var container = document.getElementById('flash-container');
+                if (container) container.remove();
+              }, 3000);
+            });
+          </script>
         {% endif %}
       {% endwith %}
 
       {% block content %}{% endblock %}
+
     </div>
   </section>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-          if (!form.checkValidity()) {
-            e.preventDefault();
-            const first = form.querySelector(':invalid');
-            if (first) first.focus();
-          }
-        });
-      });
-    });
-  </script>
 </body>
 </html>
