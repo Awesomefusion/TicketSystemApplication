@@ -1,3 +1,4 @@
+{# templates/tickets/admin_users.html #}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -36,7 +37,7 @@
             <form method="post"
                   action="{{ url_for('tickets.delete_user', user_id=user.id) }}"
                   style="display:inline;">
-              {{ forms[user.id].hidden_tag() }}
+              {{ csrf_token() }}
               <button type="submit"
                       class="button is-small is-danger"
                       onclick="return confirm('Delete user {{ user.username }}?');">
