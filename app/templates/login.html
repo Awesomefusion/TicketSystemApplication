@@ -6,6 +6,7 @@
 
     <form method="post" novalidate id="loginForm">
       {{ form.hidden_tag() }}
+      <input type="hidden" name="next" value="{{ next }}">
 
       <!-- Identifier (username or email) -->
       <div class="field">

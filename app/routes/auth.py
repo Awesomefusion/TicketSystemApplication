@@ -2,13 +2,21 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import or_
 from flask_login import login_user, logout_user, login_required, current_user
+from urllib.parse import urlparse, urljoin
+
 from .. import db
 from ..models import User, Department
 from ..forms import LoginForm, RegistrationForm
 
-# no template_folder override here—let Flask use app/templates/
 auth_bp = Blueprint('auth', __name__)
 
+def is_safe_url(target):
+    """
+    Ensure redirects only go to the same host.
+    """
+    host = request.host_url
+    test = urljoin(host, target)
+    return urlparse(test).netloc == urlparse(host).netloc
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -16,7 +24,11 @@ def login():
         return redirect(url_for('tickets.dashboard'))
 
     form = LoginForm()
-    next_page = request.args.get('next') or url_for('tickets.list_tickets')
+    raw_next = request.args.get('next')  # None if absent
+    if raw_next and is_safe_url(raw_next):
+        next_page = raw_next
+    else:
+        next_page = url_for('tickets.list_tickets')
 
     if form.validate_on_submit():
         ident = form.identifier.data
@@ -29,23 +41,22 @@ def login():
             return redirect(next_page)
 
         flash('Invalid credentials', 'danger')
+
     return render_template('login.html', form=form, next=next_page)
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    # populate the dropdown every time
     form.department_id.choices = [
         (d.id, d.name) for d in Department.query.order_by(Department.name)
     ]
 
     if form.validate_on_submit():
-        # double-check no duplicate
         if User.query.filter_by(username=form.username.data).first():
-            flash('Username already taken', 'error')
+            flash('Username already taken', 'danger')
         elif User.query.filter_by(email=form.email.data).first():
-            flash('Email already registered', 'error')
+            flash('Email already registered', 'danger')
         else:
             new_user = User(
                 username=form.username.data,
@@ -58,7 +69,6 @@ def register():
             flash('Registration successful! You may now log in.', 'success')
             return redirect(url_for('auth.login'))
 
-    # either GET or validation failed
     return render_template('register.html', form=form)
 
 
