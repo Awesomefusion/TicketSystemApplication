@@ -12,7 +12,7 @@ A simple, role-based ticketing application built with Python and Flask. Users ca
 
 ## Technology Stack
 - **Backend:** Python, Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF
-- **Database:** SQLite
+- **Database:** SQLite / Postgre
 - **Containerisation:** Docker
 - **CI/CD:** GitHub Actions
 
